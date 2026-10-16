@@ -1,0 +1,24 @@
+                                                                                
+  QUOTARY                                                DEMO · fictional data  
+                                                                                
+  24 sources · 20 current · 6 need attention                                    
+  ────────────────────────────────────────────────────────────────────────────  
+                                                                                
+  Overview      [ Attention ]                                                   
+                                                                                
+    Source                      Allowance     Left     Resets      State        
+                                                                                
+  > Google · Antigravity        5h              0%     56m         Exhausted    
+                                Weekly         26%     2d 09h                   
+    Cursor                      Plan           56%     12d         Stale        
+    Windsurf                    —                —     —           Sign-in      
+    Kimi Code                   Plan             —     Unknown     Partial      
+    Warp                        Plan           12%     2d          Low          
+    Zed                         —                —     —           Unavailable  
+                                                                                
+                                                                                
+                                                                                
+  Google · Antigravity · AI Pro · Exhausted                                     
+  ────────────────────────────────────────────────────────────────────────────  
+  ↑↓ Move  Enter Details  / Search  p Sources  ? Help  q Quit            1–6/6  
+                                                                                

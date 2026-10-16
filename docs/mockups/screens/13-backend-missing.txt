@@ -1,0 +1,32 @@
+                                                                                                    
+  QUOTARY    Your AI subscriptions, at a glance                              DEMO · fictional data  
+                                                                                                    
+  Setup · no backend connection                                                                     
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                    
+                                                                                                    
+                                                                                                    
+        ╭─ Connect CodexBar ───────────────────────────────────────────────────────────────╮        
+        │                                                                                  │        
+        │  CodexBar could not be found.                                                    │        
+        │                                                                                  │        
+        │  Quotary needs CodexBar to read your subscriptions.                              │        
+        │                                                                                  │        
+        │  Set the executable in Settings, or add codexbar to PATH.                        │        
+        │  Keep its resource bundle beside the executable.                                 │        
+        │                                                                                  │        
+        │  [ , Open settings ]     [ d Explore the demo ]                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │  Track all subscriptions in one action.                                          │        
+        │                                                                                  │        
+        │  Available sources and active logins are separate.                               │        
+        │  Quotary never invents an allowance for a missing reading.                       │        
+        │                                                                                  │        
+        │                                                                                  │        
+        ╰──────────────────────────────────────────────────────────────────────────────────╯        
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+  p Sources   d Demo   , Settings   ? Help   q Quit                                                 
+                                                                                                    

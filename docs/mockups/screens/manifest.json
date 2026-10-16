@@ -1,0 +1,137 @@
+[
+  {
+    "file": "01-subscription-desk.png",
+    "text": "01-subscription-desk.txt",
+    "scene": "overview",
+    "cols": 160,
+    "rows": 48,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "02-overview.png",
+    "text": "02-overview.txt",
+    "scene": "overview",
+    "cols": 120,
+    "rows": 40,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "03-medium.png",
+    "text": "03-medium.txt",
+    "scene": "overview",
+    "cols": 100,
+    "rows": 32,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "04-compact.png",
+    "text": "04-compact.txt",
+    "scene": "overview",
+    "cols": 80,
+    "rows": 24,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "05-small-terminal.png",
+    "text": "05-small-terminal.txt",
+    "scene": "overview",
+    "cols": 60,
+    "rows": 20,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "06-attention.png",
+    "text": "06-attention.txt",
+    "scene": "attention",
+    "cols": 120,
+    "rows": 40,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "07-google-allowances.png",
+    "text": "07-google-allowances.txt",
+    "scene": "detail",
+    "cols": 120,
+    "rows": 40,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "08-muse-history.png",
+    "text": "08-muse-history.txt",
+    "scene": "history",
+    "cols": 120,
+    "rows": 40,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "09-source-library.png",
+    "text": "09-source-library.txt",
+    "scene": "picker",
+    "cols": 120,
+    "rows": 40,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "10-daylight.png",
+    "text": "10-daylight.txt",
+    "scene": "overview",
+    "cols": 120,
+    "rows": 40,
+    "theme": "light",
+    "page": 1
+  },
+  {
+    "file": "11-monochrome.png",
+    "text": "11-monochrome.txt",
+    "scene": "attention",
+    "cols": 80,
+    "rows": 24,
+    "theme": "mono",
+    "page": 1
+  },
+  {
+    "file": "12-first-launch.png",
+    "text": "12-first-launch.txt",
+    "scene": "empty",
+    "cols": 100,
+    "rows": 32,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "13-backend-missing.png",
+    "text": "13-backend-missing.txt",
+    "scene": "backend",
+    "cols": 100,
+    "rows": 32,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "14-keyboard-help.png",
+    "text": "14-keyboard-help.txt",
+    "scene": "help",
+    "cols": 100,
+    "rows": 32,
+    "theme": "dark",
+    "page": 1
+  },
+  {
+    "file": "15-more-subscriptions.png",
+    "text": "15-more-subscriptions.txt",
+    "scene": "overview",
+    "cols": 160,
+    "rows": 48,
+    "theme": "dark",
+    "page": 2
+  }
+]

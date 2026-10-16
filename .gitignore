@@ -1,0 +1,12 @@
+# Go binaries and local build output.
+/bin/
+/build/
+/dist/
+/coverage.out
+
+# Local development state and generated captures.
+/.local/
+/captures/
+*.log
+__pycache__/
+*.py[cod]

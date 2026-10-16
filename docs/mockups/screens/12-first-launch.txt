@@ -1,0 +1,32 @@
+                                                                                                    
+  QUOTARY    Your AI subscriptions, at a glance                              DEMO · fictional data  
+                                                                                                    
+  Welcome · no sources tracked                                                                      
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                    
+                                                                                                    
+                                                                                                    
+        ╭─ Your subscriptions, together. ──────────────────────────────────────────────────╮        
+        │                                                                                  │        
+        │  Make room for your whole toolkit.                                               │        
+        │                                                                                  │        
+        │  Choose sources from the library to build your desk.                             │        
+        │  Claude, Codex, Muse, Google, and many more.                                     │        
+        │                                                                                  │        
+        │  [ p Choose sources ]    [ d Explore the demo ]                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │                                                                                  │        
+        │  Track all subscriptions in one action.                                          │        
+        │                                                                                  │        
+        │  Available sources and active logins are separate.                               │        
+        │  Quotary never invents an allowance for a missing reading.                       │        
+        │                                                                                  │        
+        │                                                                                  │        
+        ╰──────────────────────────────────────────────────────────────────────────────────╯        
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+  p Sources   d Demo   , Settings   ? Help   q Quit                                                 
+                                                                                                    

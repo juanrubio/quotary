@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quotary · visual references</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="review-header">
+    <div><span class="eyebrow">QUOTARY / DESIGN REFERENCE 01</span><h1>A little clarity for every subscription.</h1>
+      <p>A terminal dashboard with room for your whole AI toolkit.</p></div>
+    <a href="README.md">Implementer notes ↗</a>
+  </header>
+  <main>
+    <section class="controls" aria-label="Reference controls, outside the proposed TUI">
+      <label>SCREEN<select id="screen"><option value="overview">01 · Subscription desk</option><option value="attention">02 · Needs attention</option><option value="detail">03 · Google allowances</option><option value="history">04 · Muse token history</option><option value="picker">05 · Source library</option><option value="empty">06 · First launch</option><option value="backend">07 · Backend missing</option><option value="help">08 · Keyboard help</option></select></label>
+      <label>TERMINAL<select id="size"><option>160×48</option><option selected>120×40</option><option>100×32</option><option>80×24</option><option>60×20</option></select></label>
+      <label>APPEARANCE<select id="theme"><option value="dark">Midnight</option><option value="light">Daylight</option><option value="mono">Monochrome</option></select></label>
+      <button id="layout" type="button">Switch layout</button><button id="reset" type="button">Reset reference</button>
+      <span class="reference-only">FICTIONAL DATA · NO BACKEND</span>
+    </section>
+    <div class="stage" id="stage">
+      <div class="terminal-frame" id="terminal-frame">
+        <div class="window-chrome"><span>quotary --demo</span><span id="dimensions">120 columns × 40 rows</span><span>REFERENCE</span></div>
+        <pre id="terminal" tabindex="0" role="application" aria-label="Interactive Quotary reference. Press question mark for help. All data is fictional."></pre>
+      </div>
+    </div>
+    <div class="caption"><p id="caption"></p><span id="scale-note"></span></div>
+    <section class="reading-notes">
+      <article><span class="eyebrow">01 / THE COLLECTION</span><h2>Many sources. One calm view.</h2><p>24 fictional subscriptions fill the desk. Each allowance keeps its own unit, reset, and reading state. The library includes all 106 catalog providers, with Google source variants kept separate.</p></article>
+      <article><span class="eyebrow">02 / THE INTERACTION</span><h2>Try the keyboard.</h2><p>Click the terminal, then use arrows, Enter, Esc, / search, f filter, p sources, Space to pin, l layout, and ? help. Page Down moves through the collection. Changes stay in this page.</p></article>
+      <article><span class="eyebrow">03 / THE HANDOFF</span><h2>Every character has a cell.</h2><p>The terminal is rendered as a fixed character grid. Browser controls and window chrome are review tools. Build only the terminal surface in Go; follow the linked notes for exact behavior and limits.</p></article>
+    </section>
+  </main>
+  <script src="fixtures.js"></script>
+  <script src="mockup.js"></script>
+</body>
+</html>

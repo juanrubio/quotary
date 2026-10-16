@@ -1,0 +1,48 @@
+                                                                                                                                                                
+  QUOTARY    Your AI subscriptions, at a glance                                                                                          DEMO · fictional data  
+                                                                                                                                                                
+  24 sources · 24 current · 2 low                                                                                                             Updated just now  
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                                                                
+  Overview      [ All tracked ]                                                                                                / Search   f Filter   p Sources  
+                                                                                                                                                                
+  ╭─ > Claude Code ───────────────────╮  ╭─ Codex ───────────────────────────╮  ╭─ Muse Code ───────────────────────╮  ╭─ Google · Gemini app ─────────────╮    
+  │ Max · pinned                      │  │ Pro · pinned                      │  │ Power Usage · pinned              │  │ AI Pro · pinned                   │    
+  │ 5h     ███████░░░        72% left │  │ 5h     ████████░░        84% left │  │ 5h     ██████░░░░        63% left │  │ 5h     █████████░        92% left │    
+  │        Resets in 2h 14m           │  │        Resets in 3h 08m           │  │        Resets in 1h 46m           │  │        Resets in 4h 12m           │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Weekly ████░░░░░░        38% left │  │ Weekly ██████░░░░        61% left │  │ Weekly █████░░░░░        47% left │  │ Weekly ███████░░░        69% left │    
+  │        Resets in 3d 05h           │  │        Resets in 4d 11h           │  │        Resets in 2d 03h           │  │        Resets in 5d 01h           │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Updated 34s ago           +1 more │  │ Updated 33s ago           +1 more │  │ Updated 32s ago                   │  │ Updated 31s ago                   │    
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯    
+                                                                                                                                                                
+  ╭─ Google · Antigravity ────────────╮  ╭─ Cursor ──────────────────────────╮  ╭─ GitHub Copilot ──────────────────╮  ╭─ Windsurf ────────────────────────╮    
+  │ AI Pro · pinned                   │  │ Pro · pinned                      │  │ Pro · pinned                      │  │ Pro · pinned                      │    
+  │ 5h     ██░░░░░░░░        18% left │  │ Plan   ██████░░░░        56% left │  │ Plan   ████████░░        81% left │  │ Plan   ████░░░░░░        44% left │    
+  │        Resets in 56m              │  │        Resets in 12d              │  │        Resets in 15d              │  │        Resets in 11d              │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Weekly ███░░░░░░░        26% left │  │ Plan allowance                    │  │ Plan allowance                    │  │ Plan allowance                    │    
+  │        Resets in 2d 09h           │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Low · 30s ago             +2 more │  │ Updated 29s ago                   │  │ Updated 28s ago                   │  │ Updated 27s ago                   │    
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯    
+                                                                                                                                                                
+  ╭─ Kimi Code ───────────────────────╮  ╭─ Google · Gemini CLI ─────────────╮  ╭─ Kiro ────────────────────────────╮  ╭─ JetBrains AI ────────────────────╮    
+  │ Subscription · pinned             │  │ AI Pro · pinned                   │  │ Pro · pinned                      │  │ Pro · pinned                      │    
+  │ Plan   ███░░░░░░░        33% left │  │ Daily  ████████░░        78% left │  │ Plan   ███████░░░        68% left │  │ Plan   ███████░░░        73% left │    
+  │        Reset not reported         │  │        Resets in 8h 10m           │  │        Resets in 13d              │  │        Resets in 10d              │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Plan allowance                    │  │ Daily allowance                   │  │ Plan allowance                    │  │ Plan allowance                    │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Updated 26s ago                   │  │ Updated 25s ago                   │  │ Updated 24s ago                   │  │ Updated 23s ago                   │    
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯    
+                                                                                                                                                                
+                                                                                                                                                                
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  ↑↓←→ Navigate   Enter Details   Space Pin   r Refresh   l Layout   ? Help   q Quit                                                                 1–12 / 24  
+                                                                                                                                                                

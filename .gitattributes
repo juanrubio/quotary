@@ -1,0 +1,2 @@
+# Fixed-width terminal captures keep trailing spaces to preserve cell geometry.
+docs/mockups/screens/*.txt whitespace=-blank-at-eol,-blank-at-eof

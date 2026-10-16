@@ -1,0 +1,40 @@
+                                                                                                                        
+  QUOTARY    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
+                                                                                                                        
+  Google · Antigravity · AI Pro                                                                                         
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                        
+  ‹ Overview     [ Allowances ]   History unavailable                                                                   
+                                                                                                                        
+                                                                                                                        
+   Gemini models · 5h                                                 18% left     ╭─ Reading ───────────────────────╮  
+   ██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░     │                                 │  
+   Resets in 56m · 2026-10-16 14:56 UTC                                            │ STATUS                          │  
+                                                                                   │ Low                             │  
+   ───────────────────────────────────────────────────────────────────────────     │                                 │  
+   Gemini models · Weekly                                             26% left     │ LAST SUCCESS · 16 OCT           │  
+   ████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░     │ 13:59:30 UTC · 30s ago          │  
+   Resets in 2d 09h · 2026-10-18 23:00 UTC                                         │                                 │  
+                                                                                   │ ACCOUNT                         │  
+   ───────────────────────────────────────────────────────────────────────────     │ Hidden · privacy mode           │  
+   Claude models · 5h                                                 67% left     │                                 │  
+   ██████████████████████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░     │ r Refresh this source           │  
+   Resets in 2h 30m · 2026-10-16 16:30 UTC                                         ╰─────────────────────────────────╯  
+                                                                                                                        
+   ───────────────────────────────────────────────────────────────────────────                                          
+   Claude models · Weekly                                             54% left       ABOUT THIS READING                 
+   █████████████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                                          
+   Resets in 4d 02h · 2026-10-20 16:00 UTC                                           Model groups have separate         
+                                                                                     allowances. Gemini app and         
+   ───────────────────────────────────────────────────────────────────────────       Gemini CLI are other sources.      
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+   Source: antigravity:configured · Fictional reference reading                                                         
+                                                                                                                        
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  Esc Overview   ↑↓ Scroll   r Refresh source   ? Help   q Quit                                                         
+                                                                                                                        

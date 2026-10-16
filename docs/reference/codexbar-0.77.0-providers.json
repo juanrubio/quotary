@@ -1,0 +1,646 @@
+{
+  "backend_version": "CodexBar 0.77.0",
+  "captured_at_utc": "2026-10-16T21:11:27+00:00",
+  "release_url": "https://github.com/steipete/CodexBar/releases/tag/v0.77.0",
+  "command": "codexbar config providers --format json",
+  "configuration": "Empty temporary configuration. These are public default catalog entries, not user accounts, credentials, or proof of entitlement.",
+  "provider_count": 106,
+  "providers": [
+    {
+      "provider": "codex",
+      "enabled": true,
+      "defaultEnabled": true,
+      "displayName": "Codex"
+    },
+    {
+      "provider": "openai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "OpenAI"
+    },
+    {
+      "provider": "azureopenai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Azure OpenAI"
+    },
+    {
+      "provider": "claude",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Claude"
+    },
+    {
+      "provider": "clinepass",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "ClinePass"
+    },
+    {
+      "provider": "cursor",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Cursor"
+    },
+    {
+      "provider": "opencode",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "OpenCode"
+    },
+    {
+      "provider": "opencodego",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "OpenCode Go"
+    },
+    {
+      "provider": "alibaba",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Alibaba"
+    },
+    {
+      "provider": "alibabatokenplan",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Alibaba Token Plan"
+    },
+    {
+      "provider": "qwencloud",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Qwen Cloud"
+    },
+    {
+      "provider": "factory",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Droid"
+    },
+    {
+      "provider": "fireworks",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Fireworks"
+    },
+    {
+      "provider": "gemini",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Gemini"
+    },
+    {
+      "provider": "antigravity",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Antigravity"
+    },
+    {
+      "provider": "copilot",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Copilot"
+    },
+    {
+      "provider": "devin",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Devin"
+    },
+    {
+      "provider": "zai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "z.ai / GLM"
+    },
+    {
+      "provider": "minimax",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "MiniMax"
+    },
+    {
+      "provider": "manus",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Manus"
+    },
+    {
+      "provider": "kimi",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Kimi Code"
+    },
+    {
+      "provider": "kilo",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Kilo"
+    },
+    {
+      "provider": "kiro",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Kiro"
+    },
+    {
+      "provider": "vertexai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Vertex AI"
+    },
+    {
+      "provider": "augment",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Augment"
+    },
+    {
+      "provider": "jetbrains",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "JetBrains AI"
+    },
+    {
+      "provider": "moonshot",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Moonshot / Kimi Open Platform"
+    },
+    {
+      "provider": "amp",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Amp"
+    },
+    {
+      "provider": "t3chat",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "T3 Chat"
+    },
+    {
+      "provider": "langdock",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Langdock"
+    },
+    {
+      "provider": "ollama",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Ollama"
+    },
+    {
+      "provider": "synthetic",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Synthetic"
+    },
+    {
+      "provider": "openrouter",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "OpenRouter"
+    },
+    {
+      "provider": "elevenlabs",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "ElevenLabs"
+    },
+    {
+      "provider": "warp",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Warp"
+    },
+    {
+      "provider": "windsurf",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Windsurf"
+    },
+    {
+      "provider": "zed",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Zed"
+    },
+    {
+      "provider": "perplexity",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Perplexity"
+    },
+    {
+      "provider": "mimo",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Xiaomi MiMo"
+    },
+    {
+      "provider": "doubao",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Doubao"
+    },
+    {
+      "provider": "sakana",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Sakana AI"
+    },
+    {
+      "provider": "abacus",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Abacus AI"
+    },
+    {
+      "provider": "mistral",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Mistral"
+    },
+    {
+      "provider": "deepseek",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "DeepSeek"
+    },
+    {
+      "provider": "deepinfra",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "DeepInfra"
+    },
+    {
+      "provider": "codebuff",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Codebuff"
+    },
+    {
+      "provider": "venice",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Venice"
+    },
+    {
+      "provider": "commandcode",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Command Code"
+    },
+    {
+      "provider": "qoder",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Qoder"
+    },
+    {
+      "provider": "stepfun",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "StepFun"
+    },
+    {
+      "provider": "bedrock",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "AWS Bedrock"
+    },
+    {
+      "provider": "grok",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Grok"
+    },
+    {
+      "provider": "groq",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Groq"
+    },
+    {
+      "provider": "llmproxy",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "LLM Proxy"
+    },
+    {
+      "provider": "litellm",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "LiteLLM"
+    },
+    {
+      "provider": "bifrost",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Bifrost"
+    },
+    {
+      "provider": "aixy",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Aixy"
+    },
+    {
+      "provider": "deepgram",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Deepgram"
+    },
+    {
+      "provider": "poe",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Poe"
+    },
+    {
+      "provider": "chutes",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Chutes"
+    },
+    {
+      "provider": "neuralwatt",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Neuralwatt"
+    },
+    {
+      "provider": "helmcode",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Helmcode"
+    },
+    {
+      "provider": "clawrouter",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "ClawRouter"
+    },
+    {
+      "provider": "longcat",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "LongCat"
+    },
+    {
+      "provider": "sub2api",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "sub2api"
+    },
+    {
+      "provider": "wayfinder",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Wayfinder"
+    },
+    {
+      "provider": "zenmux",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "ZenMux"
+    },
+    {
+      "provider": "aiand",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "ai&"
+    },
+    {
+      "provider": "zoommate",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "ZoomMate"
+    },
+    {
+      "provider": "xai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "xAI"
+    },
+    {
+      "provider": "xapi",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "X API"
+    },
+    {
+      "provider": "notion",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Notion AI"
+    },
+    {
+      "provider": "ibmbob",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "IBM Bob"
+    },
+    {
+      "provider": "nous",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Nous Portal"
+    },
+    {
+      "provider": "muse",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Muse Code"
+    },
+    {
+      "provider": "coderabbit",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "CodeRabbit"
+    },
+    {
+      "provider": "replicate",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Replicate"
+    },
+    {
+      "provider": "huggingface",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Hugging Face"
+    },
+    {
+      "provider": "raycast",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Raycast"
+    },
+    {
+      "provider": "pi",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Pi"
+    },
+    {
+      "provider": "v0",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "v0"
+    },
+    {
+      "provider": "typesafe",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "TypeSafe"
+    },
+    {
+      "provider": "hyper",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Charm Hyper"
+    },
+    {
+      "provider": "gitkraken",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "GitKraken AI"
+    },
+    {
+      "provider": "futureagi",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Future AGI"
+    },
+    {
+      "provider": "devpass",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "DevPass"
+    },
+    {
+      "provider": "atlascloud",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Atlas Cloud"
+    },
+    {
+      "provider": "vercel",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Vercel AI Gateway"
+    },
+    {
+      "provider": "llmman",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "llmman"
+    },
+    {
+      "provider": "xkiro",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "xKiro"
+    },
+    {
+      "provider": "museai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Muse (muse.ai)"
+    },
+    {
+      "provider": "lithosai",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "LithosAI"
+    },
+    {
+      "provider": "workbuddy",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "WorkBuddy"
+    },
+    {
+      "provider": "tavily",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Tavily"
+    },
+    {
+      "provider": "linkup",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Linkup"
+    },
+    {
+      "provider": "tinyapi",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "TinyApi"
+    },
+    {
+      "provider": "exa",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Exa"
+    },
+    {
+      "provider": "cosmic",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Cosmic AI"
+    },
+    {
+      "provider": "aerostack",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Aerostack"
+    },
+    {
+      "provider": "sailresearch",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Sail Research"
+    },
+    {
+      "provider": "sofya",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Sofya"
+    },
+    {
+      "provider": "fal",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "fal"
+    },
+    {
+      "provider": "flora",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "FLORA"
+    },
+    {
+      "provider": "parallel",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Parallel"
+    },
+    {
+      "provider": "claudeplatform",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Claude Platform"
+    },
+    {
+      "provider": "munito",
+      "enabled": false,
+      "defaultEnabled": false,
+      "displayName": "Munito"
+    }
+  ]
+}

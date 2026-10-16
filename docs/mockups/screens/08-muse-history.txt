@@ -1,0 +1,40 @@
+                                                                                                                        
+  QUOTARY    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
+                                                                                                                        
+  Muse Code · Power Usage                                                                                               
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                        
+  ‹ Overview     Allowances    [ History ]                                                                              
+                                                                                                                        
+   Last 7 days · 10–16 Oct 2026 · UTC                                                                                   
+                                                                                                                        
+   Partial coverage · this machine only · 12 Oct unavailable                                                            
+                                                                                                                        
+   4.74M    known tokens                                                   ╭─ Token breakdown ──────────────────────╮   
+   6 of 7 days with recorded data                                          │                                        │   
+                                                                           │ Model                           Tokens │   
+                                                                           │                                        │   
+   TOKENS / DAY                                                            │ Model A                          2.50M │   
+                                                                           │                                        │   
+   1.2M                                            █████                   │ Model B                          1.89M │   
+                                   █████           █████                   │                                        │   
+                                   █████           █████   █████           │ Model C                          0.35M │   
+                   █████           █████   █████   █████   █████           │                                        │   
+                   █████     ?     █████   █████   █████   █████           │ ────────────────────────────────────── │   
+           █████   █████           █████   █████   █████   █████           │                                        │   
+   0       █████   █████   ┄┄┄┄┄┄  █████   █████   █████   █████           │ Known subtotal                   4.74M │   
+                                                                           │                                        │   
+           10      11      12      13      14      15      16              ╰────────────────────────────────────────╯   
+                                                                                                                        
+   Daily totals: 420k · 610k · ? · 980k · 720k · 1.18M · 830k                                                           
+                                                                                                                        
+   ? Unavailable day · known total excludes this gap                                                                    
+                                                                                                                        
+                                                                                                                        
+   Muse supplies token history; dollar totals are not available.                                                        
+   Fictional model labels · local activity is not subscription consumption.                                             
+                                                                                                                        
+                                                                                                                        
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  Esc Overview   Tab Allowances   r Refresh history   ? Help   q Quit                                                   
+                                                                                                                        

@@ -1,0 +1,20 @@
+                                                            
+  QUOTARY                                 DEMO · FICTIONAL  
+                                                            
+  24 sources · 24 current · 2 attention                     
+  ────────────────────────────────────────────────────────  
+                                                            
+  Overview    [ All tracked ]                               
+                                                            
+    Source                   Left   Reset / state           
+                                                            
+  > Claude Code               72%   2h 14m                  
+     Weekly                   38%   3d 05h                  
+    Codex                     84%   3h 08m                  
+    Muse Code                 63%   1h 46m                  
+    Google · Gemini app       92%   4h 12m                  
+                                                            
+  Claude Code · Max · Current                               
+  ────────────────────────────────────────────────────────  
+  ↑↓ Move  Enter Open  p Sources  ? Help  q Quit    1–4/24  
+                                                            

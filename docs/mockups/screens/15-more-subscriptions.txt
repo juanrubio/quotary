@@ -1,0 +1,48 @@
+                                                                                                                                                                
+  QUOTARY    Your AI subscriptions, at a glance                                                                                          DEMO · fictional data  
+                                                                                                                                                                
+  24 sources · 24 current · 2 low                                                                                                             Updated just now  
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                                                                
+  Overview      [ All tracked ]                                                                                                / Search   f Filter   p Sources  
+                                                                                                                                                                
+  ╭─ > Augment ───────────────────────╮  ╭─ ClinePass ───────────────────────╮  ╭─ Devin ───────────────────────────╮  ╭─ Droid ───────────────────────────╮    
+  │ Subscription                      │  │ Subscription                      │  │ Subscription                      │  │ Subscription                      │    
+  │ Plan   █████░░░░░        47% left │  │ Plan   ████████░░        77% left │  │ Plan   █████░░░░░        51% left │  │ Plan   █████░░░░░        54% left │    
+  │        Resets in 6d               │  │        Resets in 14d              │  │        Resets in 7d               │  │        Resets in 8d               │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Plan allowance                    │  │ Plan allowance                    │  │ Plan allowance                    │  │ Plan allowance                    │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Updated 20s ago                   │  │ Updated 12s ago                   │  │ Updated 11s ago                   │  │ Updated 18s ago                   │    
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯    
+                                                                                                                                                                
+  ╭─ Kilo ────────────────────────────╮  ╭─ MiniMax ─────────────────────────╮  ╭─ OpenCode Go ─────────────────────╮  ╭─ Perplexity ──────────────────────╮    
+  │ Subscription                      │  │ Coding Plan                       │  │ Go                                │  │ Pro                               │    
+  │ Plan   █████████░        88% left │  │ 5h     ████████░░        82% left │  │ 5h     █████████░        91% left │  │ Daily  ██████░░░░        64% left │    
+  │        Resets in 17d              │  │        Resets in 4h 15m           │  │        Resets in 3h 20m           │  │        Resets in 8h               │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Plan allowance                    │  │ Plan allowance                    │  │ Weekly ██████░░░░        62% left │  │ Daily allowance                   │    
+  │                                   │  │                                   │  │        Resets in 4d               │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Updated 19s ago                   │  │ Updated 15s ago                   │  │ Updated 17s ago                   │  │ Updated 14s ago                   │    
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯    
+                                                                                                                                                                
+  ╭─ Qoder ───────────────────────────╮  ╭─ Warp ────────────────────────────╮  ╭─ z.ai / GLM ──────────────────────╮  ╭─ Zed ─────────────────────────────╮    
+  │ Pro                               │  │ Pro                               │  │ Coding Plan                       │  │ Pro                               │    
+  │ Plan   ████░░░░░░        43% left │  │ Plan   █░░░░░░░░░        12% left │  │ 5h     ███████░░░        74% left │  │ Plan   ██████░░░░        59% left │    
+  │        Resets in 5d               │  │        Resets in 2d               │  │        Resets in 2h 05m           │  │        Resets in 9d               │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Plan allowance                    │  │ Plan allowance                    │  │ Plan allowance                    │  │ Plan allowance                    │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │                                   │  │                                   │  │                                   │  │                                   │    
+  │ Updated 13s ago                   │  │ Low · 21s ago                     │  │ Updated 16s ago                   │  │ Updated 22s ago                   │    
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯    
+                                                                                                                                                                
+                                                                                                                                                                
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  ↑↓←→ Navigate   Enter Details   Space Pin   r Refresh   l Layout   ? Help   q Quit                                                                13–24 / 24  
+                                                                                                                                                                

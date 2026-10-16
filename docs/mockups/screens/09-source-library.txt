@@ -1,0 +1,40 @@
+                                                                                                                        
+  QUOTARY    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
+                                                                                                                        
+  Source library · 106 providers · 107 selectable sources                                                               
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                        
+  Track the subscriptions you use.                                                                          24 tracked  
+                                                                                                                        
+  [ Track all subscriptions ]    Tracking does not sign you in.                                                         
+                                                                                                                        
+  / Search the full catalog                                                                                             
+                                                                                                                        
+       Source                                   Kind                 Last reading                                       
+                                                                                                                        
+  > [x]  Claude Code                            Subscription         Current                                            
+    [x]  Codex                                  Subscription         Current                                            
+    [x]  Muse Code                              Subscription         Current                                            
+    [x]  Google · Gemini app                    Subscription         Current                                            
+    [x]  Google · Gemini CLI                    Subscription         Current                                            
+    [x]  Google · Antigravity                   Subscription         Low                                                
+    [ ]  Abacus AI                              Unclassified         No reading                                         
+    [ ]  Aerostack                              Unclassified         No reading                                         
+    [ ]  ai&                                    Unclassified         No reading                                         
+    [ ]  Aixy                                   Unclassified         No reading                                         
+    [ ]  Alibaba                                Unclassified         No reading                                         
+    [ ]  Alibaba Token Plan                     Unclassified         No reading                                         
+    [ ]  Amp                                    Unclassified         No reading                                         
+    [ ]  Atlas Cloud                            Unclassified         No reading                                         
+    [x]  Augment                                Subscription         Current                                            
+    [ ]  AWS Bedrock                            API usage            No reading                                         
+    [ ]  Azure OpenAI                           API usage            Manual setup · active probe                        
+    [ ]  Bifrost                                Unclassified         No reading                                         
+    [ ]  Charm Hyper                            Unclassified         No reading                                         
+    [ ]  Chutes                                 Unclassified         No reading                                         
+                                                                                                                        
+  API, credits and unclassified sources stay separate from subscriptions.                                               
+  Catalog availability does not confirm an active subscription.                                                         
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  ↑↓ Move   Space Track   a Track subscriptions   / Search   Esc Back   ? Help                                1–20/107  
+                                                                                                                        

@@ -1,0 +1,32 @@
+                                                                                                    
+  QUOTARY    Your AI subscriptions, at a glance                              DEMO · fictional data  
+                                                                                                    
+  Keyboard guide                                                                                    
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                    
+                                                                                                    
+   A keyboard-first desk.                                                                           
+                                                                                                    
+                                                                                                    
+   ↑↓←→ / j k            Move between sources                                                       
+   Enter / Esc           Open details / return                                                      
+   Tab / Shift+Tab       Switch details tabs                                                        
+   /                     Search the current collection                                              
+   f / s                 Cycle filter / sort                                                        
+   Space                 Pin source / track in library                                              
+   p / l                 Source library / layout                                                    
+   r / R                 Refresh selected / all                                                     
+   PgUp / PgDn           Page through the collection                                                
+   ,                     Open settings                                                              
+   ? / q / Ctrl+C        Help / quit                                                                
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+  Esc Return   ↑↓ Scroll   q Quit                                                                   
+                                                                                                    

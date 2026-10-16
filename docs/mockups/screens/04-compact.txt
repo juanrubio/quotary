@@ -1,0 +1,24 @@
+                                                                                
+  QUOTARY                                                DEMO · fictional data  
+                                                                                
+  24 sources · 24 current · 2 low                                               
+  ────────────────────────────────────────────────────────────────────────────  
+                                                                                
+  Overview      [ All tracked ]                                                 
+                                                                                
+    Source                      Allowance     Left     Resets      State        
+                                                                                
+  > Claude Code                 5h             72%     2h 14m      Current      
+                                Weekly         38%     3d 05h                   
+    Codex                       5h             84%     3h 08m      Current      
+    Muse Code                   5h             63%     1h 46m      Current      
+    Google · Gemini app         5h             92%     4h 12m      Current      
+    Google · Antigravity        5h             18%     56m         Low          
+    Cursor                      Plan           56%     12d         Current      
+    GitHub Copilot              Plan           81%     15d         Current      
+    Windsurf                    Plan           44%     11d         Current      
+                                                                                
+  Claude Code · Max · Current                                                   
+  ────────────────────────────────────────────────────────────────────────────  
+  ↑↓ Move  Enter Details  / Search  p Sources  ? Help  q Quit           1–8/24  
+                                                                                

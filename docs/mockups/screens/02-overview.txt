@@ -1,0 +1,40 @@
+                                                                                                                        
+  QUOTARY    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
+                                                                                                                        
+  24 sources · 24 current · 2 low                                                                     Updated just now  
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                        
+  Overview      [ All tracked ]                                                        / Search   f Filter   p Sources  
+                                                                                                                        
+  ╭─ > Claude Code ───────────────────╮  ╭─ Codex ───────────────────────────╮  ╭─ Muse Code ───────────────────────╮   
+  │ Max · pinned                      │  │ Pro · pinned                      │  │ Power Usage · pinned              │   
+  │ 5h     ███████░░░        72% left │  │ 5h     ████████░░        84% left │  │ 5h     ██████░░░░        63% left │   
+  │        Resets in 2h 14m           │  │        Resets in 3h 08m           │  │        Resets in 1h 46m           │   
+  │ Weekly ████░░░░░░        38% left │  │ Weekly ██████░░░░        61% left │  │ Weekly █████░░░░░        47% left │   
+  │        Resets in 3d 05h           │  │        Resets in 4d 11h           │  │        Resets in 2d 03h           │   
+  │                                   │  │                                   │  │                                   │   
+  │ Updated 34s ago           +1 more │  │ Updated 33s ago           +1 more │  │ Updated 32s ago                   │   
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯   
+                                                                                                                        
+  ╭─ Google · Gemini app ─────────────╮  ╭─ Google · Antigravity ────────────╮  ╭─ Cursor ──────────────────────────╮   
+  │ AI Pro · pinned                   │  │ AI Pro · pinned                   │  │ Pro · pinned                      │   
+  │ 5h     █████████░        92% left │  │ 5h     ██░░░░░░░░        18% left │  │ Plan   ██████░░░░        56% left │   
+  │        Resets in 4h 12m           │  │        Resets in 56m              │  │        Resets in 12d              │   
+  │ Weekly ███████░░░        69% left │  │ Weekly ███░░░░░░░        26% left │  │                                   │   
+  │        Resets in 5d 01h           │  │        Resets in 2d 09h           │  │ Plan allowance                    │   
+  │                                   │  │                                   │  │                                   │   
+  │ Updated 31s ago                   │  │ Low · 30s ago             +2 more │  │ Updated 29s ago                   │   
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯   
+                                                                                                                        
+  ╭─ GitHub Copilot ──────────────────╮  ╭─ Windsurf ────────────────────────╮  ╭─ Kimi Code ───────────────────────╮   
+  │ Pro · pinned                      │  │ Pro · pinned                      │  │ Subscription · pinned             │   
+  │ Plan   ████████░░        81% left │  │ Plan   ████░░░░░░        44% left │  │ Plan   ███░░░░░░░        33% left │   
+  │        Resets in 15d              │  │        Resets in 11d              │  │        Reset not reported         │   
+  │                                   │  │                                   │  │                                   │   
+  │ Plan allowance                    │  │ Plan allowance                    │  │ Plan allowance                    │   
+  │                                   │  │                                   │  │                                   │   
+  │ Updated 28s ago                   │  │ Updated 27s ago                   │  │ Updated 26s ago                   │   
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯   
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  ↑↓←→ Navigate   Enter Details   Space Pin   r Refresh   l Layout   ? Help   q Quit                          1–9 / 24  
+                                                                                                                        

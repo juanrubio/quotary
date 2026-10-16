@@ -1,0 +1,32 @@
+                                                                                                    
+  QUOTARY    Your AI subscriptions, at a glance                              DEMO · fictional data  
+                                                                                                    
+  24 sources · 24 current · 2 low                                                 Updated just now  
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                    
+  Overview      [ All tracked ]                                    / Search   f Filter   p Sources  
+                                                                                                    
+  ╭─ > Claude Code ─────────────────────────────╮  ╭─ Codex ─────────────────────────────────────╮  
+  │ Max · pinned                                │  │ Pro · pinned                                │  
+  │ 5h     ███████░░░                  72% left │  │ 5h     ████████░░                  84% left │  
+  │        Resets in 2h 14m                     │  │        Resets in 3h 08m                     │  
+  │ Weekly ████░░░░░░                  38% left │  │ Weekly ██████░░░░                  61% left │  
+  │        Resets in 3d 05h                     │  │        Resets in 4d 11h                     │  
+  │                                             │  │                                             │  
+  │ Updated 34s ago                     +1 more │  │ Updated 33s ago                     +1 more │  
+  ╰─────────────────────────────────────────────╯  ╰─────────────────────────────────────────────╯  
+                                                                                                    
+  ╭─ Muse Code ─────────────────────────────────╮  ╭─ Google · Gemini app ───────────────────────╮  
+  │ Power Usage · pinned                        │  │ AI Pro · pinned                             │  
+  │ 5h     ██████░░░░                  63% left │  │ 5h     █████████░                  92% left │  
+  │        Resets in 1h 46m                     │  │        Resets in 4h 12m                     │  
+  │ Weekly █████░░░░░                  47% left │  │ Weekly ███████░░░                  69% left │  
+  │        Resets in 2d 03h                     │  │        Resets in 5d 01h                     │  
+  │                                             │  │                                             │  
+  │ Updated 32s ago                             │  │ Updated 31s ago                             │  
+  ╰─────────────────────────────────────────────╯  ╰─────────────────────────────────────────────╯  
+                                                                                                    
+                                                                                                    
+  ────────────────────────────────────────────────────────────────────────────────────────────────  
+  ↑↓←→ Move  Enter Details  p Sources  l Layout  ? Help  q Quit                           1–4 / 24  
+                                                                                                    

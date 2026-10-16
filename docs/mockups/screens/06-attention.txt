@@ -1,0 +1,40 @@
+                                                                                                                        
+  QUOTARY    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
+                                                                                                                        
+  24 sources · 20 current · 6 need attention                                                          Updated just now  
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+                                                                                                                        
+  Overview      [ Attention ]                                                          / Search   f Filter   p Sources  
+                                                                                                                        
+  ╭─ > Google · Antigravity ──────────╮  ╭─ Cursor ──────────────────────────╮  ╭─ Windsurf ────────────────────────╮   
+  │ AI Pro · pinned                   │  │ Pro · pinned                      │  │ Pro · pinned                      │   
+  │ 5h     ░░░░░░░░░░         0% left │  │ Plan   ██████░░░░        56% left │  │                                   │   
+  │        Resets in 56m              │  │        Resets in 12d              │  │ Sign-in needed                    │   
+  │ Weekly ███░░░░░░░        26% left │  │                                   │  │ No current reading                │   
+  │        Resets in 2d 09h           │  │ Plan allowance                    │  │                                   │   
+  │                                   │  │                                   │  │ Enter for setup guidance          │   
+  │ Exhausted · 30s ago       +2 more │  │ Stale · 42m ago                   │  │ Sign-in · 18s ago                 │   
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯   
+                                                                                                                        
+  ╭─ Kimi Code ───────────────────────╮  ╭─ Warp ────────────────────────────╮  ╭─ Zed ─────────────────────────────╮   
+  │ Subscription · pinned             │  │ Pro                               │  │ Pro                               │   
+  │ Plan   Not reported               │  │ Plan   █░░░░░░░░░        12% left │  │                                   │   
+  │        Reset not reported         │  │        Resets in 2d               │  │ Source unavailable                │   
+  │                                   │  │                                   │  │ No current reading                │   
+  │ Plan allowance                    │  │ Plan allowance                    │  │                                   │   
+  │                                   │  │                                   │  │ Enter to inspect and retry        │   
+  │ Partial · 18s ago                 │  │ Low · 21s ago                     │  │ Unavailable · 16s ago             │   
+  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯  ╰───────────────────────────────────╯   
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+  ↑↓←→ Navigate   Enter Details   Space Pin   r Refresh   l Layout   ? Help   q Quit                           1–6 / 6  
+                                                                                                                        
