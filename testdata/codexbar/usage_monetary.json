@@ -1,0 +1,6 @@
+{
+  "provider":"codex",
+  "accountKey":"monetary",
+  "primary":{"label":"Session","usedPercent":10},
+  "usage":{"cost":{"used":12.5,"limit":100,"currency":"USD","period":"monthly"}}
+}

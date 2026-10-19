@@ -1,0 +1,12 @@
+{
+  "timezone":"Europe/Madrid",
+  "coverage":"Local machine scope",
+  "partial":true,
+  "days":[
+    {"date":"2026-10-14","tokens":1000,"models":[{"name":"muse-small","input":700,"output":300}]},
+    {"date":"2026-10-15","tokens":2000,"models":[{"name":"muse-large","input":1500,"output":500}]},
+    {"date":"2026-10-16","incomplete":true}
+  ],
+  "totalTokens":3000,
+  "cost":{"amount":1.25,"currency":"USD"}
+}

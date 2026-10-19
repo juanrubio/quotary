@@ -252,17 +252,19 @@ func (c Capabilities) BulkTrackable(kind ServiceKind) bool {
 // SourceDescriptor is backend-supplied catalog metadata. Tracked and Pinned are
 // presentation inputs merged from preferences at the application layer.
 type SourceDescriptor struct {
-	Key          SourceKey
-	ProviderID   string
-	DisplayName  string
-	Variant      Variant
-	Kind         ServiceKind
-	Capabilities Capabilities
-	Available    bool
-	Tracked      bool
-	Pinned       bool
-	PinOrder     int
-	LastRead     SourceStatus
+	Key            SourceKey
+	ProviderID     string
+	DisplayName    string
+	Variant        Variant
+	Kind           ServiceKind
+	Capabilities   Capabilities
+	Available      bool
+	Enabled        bool
+	DefaultEnabled bool
+	Tracked        bool
+	Pinned         bool
+	PinOrder       int
+	LastRead       SourceStatus
 }
 
 // SourceStatus is the presentation state of one source.

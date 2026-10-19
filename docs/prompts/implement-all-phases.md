@@ -1,5 +1,12 @@
 # Goal: implement Quotary through all planned phases
 
+> Reviewer substitution: if the mandated Codex GPT-6 Astra quota is exhausted,
+> and the user explicitly authorizes a replacement, run the same external review
+> prompt through `scripts/review-phase-muse.sh` using the Muse CLI model
+> `muse-wonder-full-1.0`. Record the substitution and quota reason in the phase
+> review evidence. Do not substitute silently or relax the review gate.
+
+
 Use this file as the session objective. Read it fully, then execute it without
 stopping at planning.
 

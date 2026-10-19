@@ -1,0 +1,4 @@
+[
+  {"provider":"codex","accountKey":"one","plan":"Pro","primary":{"label":"Session","usedPercent":10}},
+  {"provider":"codex","accountKey":"two","plan":"Pro","primary":{"label":"Session","usedPercent":20}}
+]

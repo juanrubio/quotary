@@ -1,0 +1,9 @@
+{
+  "provider":"muse",
+  "plan":"Power Usage",
+  "sampleAt":"2026-10-16T14:00:00Z",
+  "accounts":[
+    {"accountKey":"alpha","primary":{"label":"Five hour","usedPercent":30,"unit":"requests"}},
+    {"accountKey":"beta","primary":{"label":"Five hour","usedPercent":70}}
+  ]
+}

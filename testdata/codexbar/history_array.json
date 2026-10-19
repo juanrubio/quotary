@@ -1,0 +1,11 @@
+[
+  {
+    "timezone":"Europe/Madrid",
+    "partial":true,
+    "days":[
+      {"date":"2026-10-14","tokens":1000},
+      {"date":"2026-10-15","tokens":2000},
+      {"date":"2026-10-16","incomplete":true}
+    ]
+  }
+]

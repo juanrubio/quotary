@@ -1,0 +1,4 @@
+[
+  {"provider":"codex","accountKey":"healthy","plan":"Pro","primary":{"label":"Session","usedPercent":10}},
+  {"provider":"codex","accountKey":"expired","error":{"code":"auth","message":"Sign in required"}}
+]

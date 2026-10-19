@@ -1,0 +1,8 @@
+{
+  "provider":"codex",
+  "accountKey":"baseline",
+  "primary":{"label":"Session","window":{"usedPercent":20,"windowMinutes":300}},
+  "extraRateWindows":[{"name":"Model quota","window":{"usedPercent":30,"windowMinutes":60}}],
+  "providerCost":{"used":1,"limit":10,"currency":"USD","period":"monthly"},
+  "details":[{"title":"Baseline chart","chart":{"points":[{"label":"Mon","value":3},{"label":"Tue","value":4}]},"rows":[{"label":"Daily","value":"3/10","progress":{"value":3,"max":10,"unit":"requests"}}]}]
+}

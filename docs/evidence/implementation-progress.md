@@ -10,7 +10,7 @@ External review: separate Codex CLI process using GPT-6 Astra. See
 | 2 — Demo backend | complete | 6a7d40f | make check, make race, PTY isolation | PASS (14 rounds) | none |
 | 3 — TUI and themes | complete | 726c15e | make check, make race, 15 captures | PASS (24 rounds) | ptrace isolation skipped in review sandbox; Phase 2 evidence retained |
 | 4 — Interaction and goldens | complete | fe8b5c9 | make check, make race, 22 goldens, 15 captures | PASS (20 rounds) | ptrace isolation skipped in review sandbox; Phase 2 evidence retained |
-| 5 — CodexBar adapter | not started | — | — | — | — |
+| 5 — CodexBar adapter | complete | pending | make check, make race, adapter contract suite | PASS (Muse muse-wonder-full-1.0 substitution; Codex quota exhausted) | Live validation deferred to Phase 8; Phase 6 must wire NativeOnly |
 | 6 — Refresh scheduler | not started | — | — | — | — |
 | 7 — Catalog and preferences | not started | — | — | — | — |
 | 8 — Live validation | not started | — | — | — | — |

@@ -1,0 +1,7 @@
+{
+  "providers": [
+    {"provider":"codex","enabled":true,"defaultEnabled":true,"displayName":"Codex"},
+    {"provider":"gemini","enabled":false,"defaultEnabled":true,"displayName":"Gemini"},
+    {"provider":"unknown-provider","enabled":false,"defaultEnabled":false,"displayName":"Unfamiliar \u001b[2J Provider"}
+  ]
+}

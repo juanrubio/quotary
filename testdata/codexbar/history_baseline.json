@@ -1,0 +1,10 @@
+{
+  "coverage":"Local machine baseline",
+  "daily":[
+    {"date":"2026-10-14","totalTokens":1000,"modelBreakdowns":[{"model":"baseline-small","inputTokens":700,"outputTokens":300}]},
+    {"date":"2026-10-15","totalTokens":2000,"modelBreakdowns":[{"model":"baseline-large","inputTokens":1500,"outputTokens":500}]},
+    {"date":"2026-10-16","totalTokens":null,"incomplete":true}
+  ],
+  "totals":{"totalTokens":3000,"totalCost":1.25,"currency":"USD","incompleteCount":1},
+  "modelBreakdowns":[{"model":"baseline-small","inputTokens":700,"outputTokens":300},{"model":"baseline-large","inputTokens":1500,"outputTokens":500}]
+}

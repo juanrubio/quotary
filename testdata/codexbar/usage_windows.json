@@ -1,0 +1,23 @@
+[
+  {
+    "provider":"codex",
+    "source":"web",
+    "accountKey":"account-one",
+    "accountLabel":"Fictional One",
+    "plan":"Pro",
+    "sampleAt":"2026-10-16T14:00:00Z",
+    "primary":{"label":"Session","usedPercent":20,"windowMinutes":300,"resetsAt":"2026-10-16T19:00:00Z"},
+    "secondary":{"label":"Weekly","used":40,"limit":100,"windowMinutes":10080,"resetsAt":"2026-10-23T14:00:00Z"},
+    "credits":{"label":"Credits","value":12.34,"unit":"USD","kind":"prepaid_money","timestamp":"2026-10-15T14:00:00Z"},
+    "details":[
+      {"title":"Model groups","rows":[{"label":"Models","value":"Codex \u001b[2J and Mini"}],"bars":[{"label":"Daily","value":3,"max":10,"unit":"requests"}],"chart":[{"label":"Mon","value":3}]}
+    ]
+  },
+  {
+    "provider":"claude",
+    "accountKey":"account-two",
+    "plan":"Max",
+    "primary":{"label":"Session","usedPercent":100.1},
+    "quality":"partial"
+  }
+]
