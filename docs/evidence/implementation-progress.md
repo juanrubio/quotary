@@ -9,7 +9,7 @@ External review: separate Codex CLI process using GPT-6 Astra. See
 | 1 — Domain and seams | complete | af9bc54 | make check, make race | PASS (11 rounds) | none |
 | 2 — Demo backend | complete | 6a7d40f | make check, make race, PTY isolation | PASS (14 rounds) | none |
 | 3 — TUI and themes | complete | 726c15e | make check, make race, 15 captures | PASS (24 rounds) | ptrace isolation skipped in review sandbox; Phase 2 evidence retained |
-| 4 — Interaction and goldens | complete | pending | make check, make race, 22 goldens, 15 captures | PASS (20 rounds) | ptrace isolation skipped in review sandbox; Phase 2 evidence retained |
+| 4 — Interaction and goldens | complete | fe8b5c9 | make check, make race, 22 goldens, 15 captures | PASS (20 rounds) | ptrace isolation skipped in review sandbox; Phase 2 evidence retained |
 | 5 — CodexBar adapter | not started | — | — | — | — |
 | 6 — Refresh scheduler | not started | — | — | — | — |
 | 7 — Catalog and preferences | not started | — | — | — | — |
