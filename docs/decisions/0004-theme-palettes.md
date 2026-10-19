@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-10-19
 - Supersedes: none
-- Related: UX.md §3, SPEC.md §8
+- Related: docs/specs/tui.md §3, docs/specs/product.md §8
 
 ## Context
 
@@ -48,7 +48,7 @@ mapping are original to this project.
 
 ## Consequences
 
-- UX.md and SPEC.md record the named themes, persistence rule, and acceptance
+- docs/specs/tui.md and docs/specs/product.md record the named themes, persistence rule, and acceptance
   criterion.
 - `internal/theme/` owns all palette values; TUI components use semantic tokens
   only and never raw colours.

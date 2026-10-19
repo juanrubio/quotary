@@ -2,7 +2,7 @@
 
 Status: proposed prototype; no application implementation or live account validation.
 Date: 2026-10-16.
-Visual contract: [UX.md](UX.md).
+Visual contract: [tui.md](tui.md).
 
 ## 1. Product
 
@@ -59,7 +59,7 @@ management are deferred.
 
 Run `codexbar config providers --format json` to obtain the catalog. Version
 0.77.0 reports **106 provider IDs** in an empty configuration. The captured
-[reference catalog](docs/reference/codexbar-0.77.0-providers.json) is evidence of
+[reference catalog](../reference/codexbar-0.77.0-providers.json) is evidence of
 that baseline, not a permanent enumeration or evidence of working logins.
 
 The catalog command reports IDs, names, and enablement. It does **not** establish
@@ -201,7 +201,7 @@ total is needed for the prototype. [CLI cost contract][cli]
 `quotary --demo` bypasses backend discovery, credentials, local session logs, and
 network activity entirely. It uses fictional identities, deterministic readings,
 and an explicit **DEMO · fictional data** label on every screen. Demo scenarios
-are described in [UX.md](UX.md#8-demo-and-visual-review).
+are described in [tui.md](tui.md#8-demo-and-visual-review).
 
 ## 5. Implementation architecture
 
@@ -413,7 +413,7 @@ setup instructions without adding repeated confirmation prompts to refresh.
 
 | Stage | Deliverable | Exit condition |
 | --- | --- | --- |
-| 1. Visual prototype | Go TUI, fictional backend, card/compact/detail/history screens, themes, keyboard help | Visual criteria in UX.md pass at required sizes and large collection sizes |
+| 1. Visual prototype | Go TUI, fictional backend, card/compact/detail/history screens, themes, keyboard help | Visual criteria in tui.md pass at required sizes and large collection sizes |
 | 2. Backend boundary | Version/catalog discovery, direct process runner, JSON normalization, partial/error handling | Contract fixtures exercise all metric families and failure modes |
 | 3. Broad live integration | Dynamic catalog, capability annotations, bulk tracking, scheduler, source variants | Every classified subscription source in the baseline catalog is trackable; unsupported/data-unavailable cases are honest |
 | 4. Priority validation | Claude, Codex, Muse, Gemini app, Antigravity, and supported Gemini CLI cases | Live results match the CLI on the same source/account when credentials are available; unavailable cases remain recorded as such |
@@ -431,7 +431,7 @@ prototype, not a later promise that depends on four hardcoded screens.
 - [ ] Bulk tracking includes all classified subscription sources, with active probes excluded.
 - [ ] 24 tracked subscriptions and a 106-provider (107-selectable) mixed stress collection are navigable.
 - [ ] The same source remains selected through refresh, filtering, sorting, and resizing where it remains in scope.
-- [ ] Overview, Details, History, picker, help, and failure screens meet [UX.md](UX.md).
+- [ ] Overview, Details, History, picker, help, and failure screens meet [tui.md](tui.md).
 - [ ] Green, Blue, Amber, and Monokai render in light and dark; monochrome keeps
   every state cue without color.
 - [ ] All ordinary operations are accessible by keyboard and explained in context.

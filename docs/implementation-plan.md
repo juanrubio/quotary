@@ -1,8 +1,8 @@
 # Quotary — implementation plan
 
-Status: draft for execution. Source of truth remains [SPEC.md](SPEC.md) and
-[UX.md](UX.md); this plan sequences the work and names concrete deliverables.
-Visual references live in [docs/mockups](docs/mockups/README.md).
+Status: draft for execution. Source of truth remains [product spec](specs/product.md) and
+[TUI spec](specs/tui.md); this plan sequences the work and names concrete deliverables.
+Visual references live in [docs/mockups](mockups/README.md).
 
 ## 1. Strategy
 
@@ -68,11 +68,11 @@ Tasks:
   no moved specification or plan is duplicated at the repository root.
 - Use Boardwalk's lint setup (`go tool golangci-lint` with errcheck, govet,
   ineffassign, staticcheck, unused, misspell, unconvert, unparam; gofumpt).
-- **Documentation migration:** move `SPEC.md`, `UX.md`, and
-  `IMPLEMENTATION_PLAN.md` into `docs/` rather than leaving specifications at the
+- **Documentation migration:** move `specs/product.md`, `specs/tui.md`, and
+  `docs/implementation-plan.md` into `docs/` rather than leaving specifications at the
   repository root. Suggested layout:
-  - `docs/specs/product.md` (from `SPEC.md`)
-  - `docs/specs/tui.md` (from `UX.md`)
+  - `docs/specs/product.md` (from `specs/product.md`)
+  - `docs/specs/tui.md` (from `specs/tui.md`)
   - `docs/implementation-plan.md` (this file)
   - `docs/decisions/NNNN-*.md` for ADRs (stack, CodexBar boundary, config
     format, theme palettes)
@@ -81,13 +81,15 @@ Tasks:
     measurements
   - `docs/README.md` as the documentation index; only the root collaboration
     files stay outside `docs/`
-- Update every cross-reference after the move, including `SPEC.md` ↔ `UX.md`,
+- Update every cross-reference after the move, including `specs/product.md` ↔ `specs/tui.md`,
   the root README, and the mockup guide. Do not leave duplicate copies of moved
   documents and do not add redirect stubs unless an external link cannot be
   avoided.
 - Create the package skeleton from SPEC §5 plus the house packages below.
-- Add `testdata/codexbar/` policy: synthetic or redacted fixtures only; no
-  credentials, cookies, emails, project paths, or raw live payloads.
+- Add the [fixture policy](fixtures-policy.md) for `testdata/codexbar/`: synthetic
+  or redacted fixtures only; no credentials, cookies, emails, project paths, or
+  raw live payloads.
+- Add the [tapes guide](tapes.md); VHS demos use demo data only.
 - Add `internal/cli/` with Cobra root, `--version`, `--demo`, terminal check,
   and a `Version = "dev"` stamp suitable for release `-ldflags`.
 
@@ -246,7 +248,7 @@ Adopt Trailmark's theme model:
 - Choose light or dark from the terminal background report
   (`tea.BackgroundColorMsg`), falling back to dark when the terminal does not
   report a background. Retain Quotary's optional manual appearance override
-  (auto/dark/light) from UX.md.
+  (auto/dark/light) from the TUI specification.
 - Green uses Quotary's UX §3 dark/light tokens as its anchor. Blue, Amber, and
   Monokai port Trailmark's structural colours (panel, text, muted, accent,
   selection, path, separator, raised) from
@@ -604,7 +606,7 @@ Phase 9 closes every row.
 | Bulk tracking includes subscriptions and excludes probes | P7 | Manifest eligibility and bulk-selection tests |
 | 24 tracked and 107-source mixed collection navigable | P2, P4, P6 | Demo scenarios plus stress/race runs |
 | Selection preserved through refresh/filter/sort/resize | P4 | Interaction tests by source identity |
-| Screens meet UX.md | P3–P4 | Goldens, captures, manual visual review |
+| Screens meet the TUI specification | P3–P4 | Goldens, captures, manual visual review |
 | Green/Blue/Amber/Monokai in light/dark; monochrome keeps state cues | P3–P4 | Palette contrast tests, monochrome golden, stored captures |
 | Ordinary operations keyboard-accessible and explained | P4 | Key-map tests, help coverage |
 | Fixtures cover quota, credit, money, grouped windows, details, optional history | P5 | Contract fixture suite |

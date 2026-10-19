@@ -1,10 +1,10 @@
 # Quotary — visual and interaction specification
 
 Status: proposed design. The text screens below are fictional wireframes, not
-captures of an implemented application. Product and data contract: [SPEC.md](SPEC.md).
+captures of an implemented application. Product and data contract: [product.md](product.md).
 
-Rendered references are available in the [interactive mockups](docs/mockups/index.html).
-The [implementer guide](docs/mockups/README.md) links 15 exported screens, exact
+Rendered references are available in the [interactive mockups](../mockups/index.html).
+The [implementer guide](../mockups/README.md) links 15 exported screens, exact
 cell layouts, fictional fixtures, and reproduction instructions. These browser
 references illustrate the design; actual Go TUI acceptance is still required.
 
@@ -175,7 +175,7 @@ Settings → Theme lists the four names, marks the current choice, and saves wit
 `Enter`; a failed save leaves the active theme unchanged and shows a concise
 error. Changing theme never triggers a backend refresh or rescan. The decision and
 Trailmark attribution are recorded in
-[the theme ADR](docs/decisions/0004-theme-palettes.md).
+[the theme ADR](../decisions/0004-theme-palettes.md).
 
 Use rounded outer card corners where supported. One accent color marks focus.
 Avoid every provider getting a competing brand-colored panel. Numeric columns

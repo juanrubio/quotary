@@ -1,0 +1,25 @@
+Quotary terminal restoration check
+date: 2026-10-19T08:24:48Z
+terminal: tmux PTY, 80x24, TERM=xterm-256color
+quit-q: OK
+--- quit-q before quit ---
+
+  QUOTARY · DEMO · fictional data
+
+  Starting…
+
+  q Quit
+--- quit-q after quit ---
+QUOTARY_EXIT=0
+QUOTARY_STTY_RESTORED=1
+quit-ctrl-c: OK
+--- quit-ctrl-c before quit ---
+
+  QUOTARY · DEMO · fictional data
+
+  Starting…
+
+  q Quit
+--- quit-ctrl-c after quit ---
+QUOTARY_EXIT=0
+QUOTARY_STTY_RESTORED=1

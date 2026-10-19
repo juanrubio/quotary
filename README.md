@@ -11,9 +11,9 @@ into a polished, keyboard driven interface.
 
 *Fictional design reference. No application or provider reading is shown here.*
 
-**Project status:** specifications and visual mockups are ready; the Go
-application has not been implemented. The commands and behavior in the specs are
-design targets, not working application features.
+**Project status:** early implementation. The Go module, CLI shell, and
+documentation layout exist; product behavior remains in progress against the
+specifications and implementation plan.
 
 ## Preview the design
 
@@ -46,9 +46,9 @@ not proof of 106 active subscriptions or working integrations.
 
 ## Project documents
 
-- [Product and technical specification](SPEC.md): scope, coverage, backend
+- [Product and technical specification](docs/specs/product.md): scope, coverage, backend
   contract, data meaning, implementation stages, and acceptance criteria.
-- [Visual and interaction specification](UX.md): layouts, keyboard behavior,
+- [Visual and interaction specification](docs/specs/tui.md): layouts, keyboard behavior,
   states, themes, and small terminal requirements.
 - [Interactive mockups](docs/mockups/index.html) and [implementer guide](docs/mockups/README.md):
   15 reference screens, browser preview, fixtures, and reproducible captures.
@@ -73,14 +73,25 @@ for its setup and provider behavior.
 
 ```text
 README.md                         Project overview and preview instructions
-SPEC.md                           Product and technical specification
-UX.md                             TUI and interaction specification
+AGENTS.md                         Contributor front door
+Makefile                          Build, test, lint, docs-check, and race targets
+cmd/quotary/                      Thin executable entrypoint
+internal/                         CLI, domain, backends, config, refresh, TUI
+testdata/codexbar/                Synthetic or redacted adapter fixtures
+tapes/                            VHS demo scripts
+docs/README.md                    Documentation index
+docs/specs/product.md             Product and technical specification
+docs/specs/tui.md                 TUI and interaction specification
+docs/implementation-plan.md       Delivery sequence and exit gates
+docs/decisions/                   Architecture decision records
 docs/mockups/                     Offline browser reference and screenshots
 docs/reference/                   Pinned public provider catalog snapshot
+docs/evidence/                    Reviews, live checks, captures, measurements
 ```
 
-There is no Go module, executable, or live integration in this repository yet.
-Implementation and product acceptance remain open work in `SPEC.md` and `UX.md`.
+Build and run the demo with `make build` and `./quotary --demo`. Product
+acceptance remains open work in `docs/specs/product.md` and
+`docs/specs/tui.md`.
 
 ## License
 

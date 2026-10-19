@@ -11,8 +11,8 @@ The source library uses the real names and IDs in the pinned public
 [CodexBar catalog](../reference/codexbar-0.77.0-providers.json); those entries do not
 establish working integrations or active subscriptions on this machine.
 
-The product and data requirements remain in [SPEC.md](../../SPEC.md). Interaction
-and accessibility requirements remain in [UX.md](../../UX.md). Use these mockups
+The product and data requirements remain in [product specification](../specs/product.md). Interaction
+and accessibility requirements remain in [interaction specification](../specs/tui.md). Use these mockups
 to make that design concrete. Where an illustrative reading differs from a
 provider's actual output, preserve the real data's meaning and adapt the layout.
 
@@ -62,7 +62,7 @@ Use the terminal's font; do not bundle a web font or require Nerd Fonts. These
 exports use DejaVu Sans Mono at 15px with an 18px cell height. PNG pixels are
 illustrative; character-cell geometry, hierarchy, and data semantics are the
 reference. The Go renderer must use terminal display width and handle Unicode,
-terminal color profiles, `NO_COLOR`, and the ASCII fallback described in UX.md.
+terminal color profiles, `NO_COLOR`, and the ASCII fallback described in the [TUI specification](../specs/tui.md).
 
 | Piece | Cell geometry and behavior |
 | --- | --- |
@@ -81,9 +81,9 @@ terminal color profiles, `NO_COLOR`, and the ASCII fallback described in UX.md.
 
 The first twelve sources are deliberately pinned in a curated order in the
 demo. This makes the priority families visible together. It is not a hardcoded
-live-provider order. Live ordering follows UX.md; the source IDs remain stable.
+live-provider order. Live ordering follows the [TUI specification](../specs/tui.md); the source IDs remain stable.
 
-Use the tokens in [styles.css](styles.css), which match UX.md:
+Use the tokens in [styles.css](styles.css), which match the [TUI specification](../specs/tui.md):
 canvas, surface, border, text, muted, accent, available (`good` in the reference
 renderer), low, error, and stale. Card surfaces and gutters create most of the
 hierarchy. Keep provider names in the same palette rather than assigning every
@@ -109,7 +109,7 @@ metrics, model suggestions, or aggregate totals just to match two-window cards.
   and active-probe sources are not silently included.
 - The classification of these 24 demo sources is illustrative. **Do not copy it
   into a live capability manifest.** Validate the backend's capabilities and
-  source behavior as specified in SPEC.md before assigning live classifications.
+  source behavior as specified in the product specification before assigning live classifications.
 - The history clock is fixed at `2026-10-16T14:00:00Z`. The Muse example has
   4.74M known tokens across six recorded days, with 12 October unavailable.
   The missing day contributes no invented zero. Models A/B/C are fictional.
@@ -183,4 +183,4 @@ The implementer must still capture the actual Go TUI at 160×48, 120×40, 100×3
 80×24, and 60×20, in dark, light, and monochrome modes. Verify selection visibility
 across page boundaries, real terminal resize behavior, Unicode cell widths,
 all returned metric families, and error transitions. Product acceptance remains
-the unchecked criteria in SPEC.md and UX.md.
+the unchecked criteria in the [product specification](../specs/product.md) and [TUI specification](../specs/tui.md).
