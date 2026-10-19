@@ -610,11 +610,11 @@ Phase 9 closes every row.
 | Green/Blue/Amber/Monokai in light/dark; monochrome keeps state cues | P3–P4 | Palette contrast tests, monochrome golden, stored captures |
 | Ordinary operations keyboard-accessible and explained | P4 | Key-map tests, help coverage |
 | Fixtures cover quota, credit, money, grouped windows, details, optional history | P5 | Contract fixture suite |
-| Missing/null/zero/exhausted/over-limit/stale/partial distinct | P1, P5 | Domain and adapter table tests |
+| Missing/null/zero/exhausted/over-limit/stale/partial distinct | P1, P5 | `TestRemainingPercent`, `TestOverLimit`, `TestNumericZeroIsMeasured`, `TestDeriveState`, `TestHistoryOptionalConcepts`; adapter fixtures in P5 |
 | Partial results survive mixed success/nonzero exits | P5 | Failure/partial fixtures |
 | Additive fields tolerated; malformed/oversized/incompatible visible | P5 | Schema-drift and cap fixtures |
-| Sample/receipt distinct; countdowns local | P1, P6 | Freshness tests and scheduler tests |
-| Account/source changes cannot inherit readings or late results | P1, P6 | Source-key, retention, generation tests |
+| Sample/receipt distinct; countdowns local | P1, P6 | `TestFreshness`, `TestResetLabels`; scheduler tests in P6 |
+| Account/source changes cannot inherit readings or late results | P1, P6 | `TestSourceKey*`, `TestSourceKeyCoalescing`, `TestSourceOrderingUsesStableTieBreak`, `TestImportBoundaries`; generation tests in P6 |
 | Unknown names/Unicode/control sequences cannot break or inject | P3, P9 | Sanitization, truncation, fuzz tests |
 | Demo makes no backend/credential/session access | P2 | Injected exec/fs/config seams assert zero access |
 | Cancellation/timeout/quit clean up and restore terminal | P5, P6, P9 | Runner, quit, and signal tests |
@@ -626,6 +626,36 @@ Phase 9 closes every row.
 
 Open rows need a dated evidence record with backend version and reason, not an
 unchecked box without explanation.
+
+### 7.3 Phase 1 verification
+
+| Phase 1 requirement | Verification |
+| --- | --- |
+| Canonical provider/variant/account parsing, escaping, malformed input | `TestSourceKeyRoundTrip`, `TestSourceKeyEscaping`, `TestSourceKeyRejectsInvalid`, `TestVariantValidation` |
+| Known, unknown, and unspecified accounts stay distinct; controls round-trip | `TestSourceKeyAccountChangesAreDistinct`, `TestSourceKeyCoalescing`, `TestC1ControlAccountEscaping` |
+| Remaining percentage, over-limit, gauge clamping, missing/non-finite | `TestRemainingPercent`, `TestOverLimit`, `TestGaugeClamps` |
+| Measured zero versus unavailable credits, history, models, and cost | `TestNumericZeroIsMeasured`, `TestHistoryOptionalConcepts` |
+| Sample/receipt separation, unknown sample time, staleness boundary | `TestFreshness`, `TestResetLabels` |
+| State precedence for errors, retained data, quality, balance-only and unit allowances | `TestDeriveState`, `TestCountStatesOverlap`, `TestErrorCategoriesMapToUXStates` |
+| Attention filter agrees with state aggregation | `TestAttentionFilterAgreesWithCounts` |
+| Typed scoped errors survive the Backend error seam | `TestScopedErrorThroughBackendSeam` |
+| Explicit state cannot hide error or window-quality precedence | `TestExplicitStateCannotHideErrorPrecedence`, `TestWindowQualityOverridesExplicitCurrent`, `TestExplicitMeasurementStateCannotHideWindowQuality` |
+| Queued/fetching states survive without readings | `TestSchedulingStatesSurviveWithoutData` |
+| Completeness precedes explicit measurement states | `TestCompletenessChecksBeforeExplicitState` |
+| Mixed available/unavailable balances are partial | `TestMixedBalancesArePartial`, `TestExplicitStateCompletenessRegression` |
+| Mixed metric families (windows, balances, details) are partial | `TestMixedMetricFamiliesArePartial` |
+| Empty detail sections are not readings | `TestEmptyDetailsAreNotReadings` |
+| Unsupported detail families stay disclosures, not backend incompatibility | `TestUnsupportedDetailFamiliesDoNotHideSupportedReadings` |
+| Detail bars/points preserve optionality and reject invalid numerics | `TestDetailNumericOptionality` |
+| Unavailable details alongside windows are partial | `TestUnavailableDetailsWithWindowsArePartial` |
+| Known account `unknown` never collides with missing identity | `TestUnknownAccountSentinelDoesNotCollide` |
+| Missing sibling windows become partial, not current | `TestMissingSiblingWindowMarksPartial` |
+| Unknown capabilities stay conservative | `TestCapabilityUnknownIsConservative` |
+| Stable pinned/name/key ordering independent of input order | `TestSourceOrderingUsesStableTieBreak`, `TestSortSnapshotsPinnedThenName` |
+| Filter/search predicates | `TestFilter` |
+| Config defaults, normalization, interval, slice ownership, rejected save | `internal/config/store_test.go` |
+| Domain/adapter/TUI import boundaries | `TestImportBoundaries`, `TestImportBoundaryDetectsViolation` |
+| Backend contract seam | `internal/backend/backend_test.go` |
 
 ## 8. Suggested commit/PR sequence
 
