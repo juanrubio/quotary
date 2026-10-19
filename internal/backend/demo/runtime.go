@@ -49,6 +49,7 @@ type Runtime struct {
 	runner   Runner
 	deps     Deps
 	refresh  map[string]*refreshEntry
+	outcome  map[string]string
 	query    string
 }
 
@@ -65,6 +66,7 @@ func NewRuntime(scenario Scenario, deps Deps) (*Runtime, error) {
 		store:    deps.Store,
 		deps:     deps,
 		refresh:  map[string]*refreshEntry{},
+		outcome:  map[string]string{},
 	}
 	if runtime.store == nil {
 		runtime.store = config.NewMemoryStore(config.Defaults())
@@ -189,6 +191,7 @@ func (r *Runtime) StartRefresh(key string) {
 	}
 	entry.generation++
 	entry.stage = 1
+	r.outcome[key] = "Queued"
 }
 
 // AdvanceRefresh moves queued -> fetching -> current. It reports whether another
@@ -201,13 +204,23 @@ func (r *Runtime) AdvanceRefresh(key string) bool {
 	switch entry.stage {
 	case 1:
 		entry.stage = 2
+		r.outcome[key] = "Fetching"
 		return true
 	case 2:
 		entry.stage = 0
+		r.outcome[key] = "Success"
 		return false
 	default:
 		return false
 	}
+}
+
+// RefreshOutcome reports the last simulated refresh result for key.
+func (r *Runtime) RefreshOutcome(key string) string {
+	if outcome := r.outcome[key]; outcome != "" {
+		return outcome
+	}
+	return "Current"
 }
 
 // RefreshStage reports the simulated stage for tests and UI copy.
@@ -366,3 +379,8 @@ func (r *Runtime) SetScenarioName(name string) error {
 
 // BackendError reports the simulated setup failure, if any.
 func (r *Runtime) BackendError() string { return r.backend.BackendError() }
+
+// SavePreferences persists through the injected store. Demo uses memory only.
+func (r *Runtime) SavePreferences(prefs config.Preferences) error {
+	return r.store.Save(prefs)
+}

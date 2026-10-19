@@ -685,6 +685,110 @@ unchecked box without explanation.
 | Window keys are stable and unique | `TestWindowKeysAreUnique` |
 | Invalid variants and conflicting scopes are rejected | `TestUsageRejectsUnvalidatedVariantsAndScopes`, `TestUsageRejectsConflictingScopes` |
 | Returned history owns its values | `TestHistoryFixturesAreOwnedByBackend` |
+
+### 7.5 Phase 3 verification
+
+| Phase 3 requirement | Verification |
+| --- | --- |
+| Overview renders at 160×48, 120×40, 100×32, 80×24, 60×20 without overflow | `TestOverviewAtRequiredSizes`, `checkFrame` |
+| Details, History, picker, Settings, Help render at each required size | `TestAllScreensRenderAtRequiredSizes` |
+| Card grid uses 4/3/2 columns and enforces 36 cells | `TestCardColumnBreakpoints` |
+| Green, Blue, Amber, Monokai in light/dark and monochrome | `TestFourThemesLightDarkAndMonochrome` |
+| Every palette meets WCAG AA on Canvas and Surface | `internal/theme/theme_test.go` |
+| Theme chooser persists and applies without refresh | `TestThemeChooserSavesAndApplies` |
+| Search/filter context and clearing | `TestSearchAndFilterContext` |
+| Muse history totals, gap, and token-only copy | `TestHistoryMissingDayAndTokenOnly` |
+| Picker tracking and bulk subscription action | `TestPickerTrackingAndBulkAction` |
+| External text sanitization and display-width truncation | `internal/tui/text_test.go` |
+| Styling survives layout; themes differ; selection has a structural cue | `TestForcedColorPreservesStylingAndSelection` |
+| Footer shortcuts and position remain visible; tiny terminals do not panic | `TestFooterAndTinyTerminal` |
+| 120×24 uses compact rows; 60×20 uses reduced compact columns | `TestResponsiveHeightUsesCompactLayout` |
+| History is bound to the selected source and reloads on navigation | `TestHistoryBoundToSelectedSource` |
+| Missing sample time and privacy masking | `TestFreshnessUnknownAndPrivacyMasking` |
+| 7/30-day history range control | `TestHistoryRangeControl` |
+| Settings cancel and explicit monochrome | `TestSettingsCancelAndMonochromeSetting` |
+| Refresh-all advances the whole tracked collection | `TestRefreshAllAdvancesTrackedCollection` |
+| Focused search accepts `q` | `TestFocusedSearchAcceptsQ` |
+| Pin labels come from preferences | `TestUnpinnedCardOmitsPinnedLabel` |
+| Unit and balance-only readings render | `TestUnitAllowanceAndBalanceOnlyRendering` |
+| Actual Go ANSI captures for all 15 scenes, with a distinct second page | `TestCapturePhase3`, `docs/evidence/captures/` |
+| Rendered external text is sanitized | `TestRenderedExternalTextIsSanitized` |
+| Narrow Details exposes metadata through scrolling | `TestDetailsMetadataAtNarrowWidths` |
+| Priced/unpriced history semantics at full and compact sizes | `TestHistoryPricingSemantics` |
+| Theme chooser keys, save, and cancel | `TestSettingsThemeChooserWithKeys` |
+| NO_COLOR and Canvas background behavior | `TestNoColorEnvironmentDisablesColor`, `TestCanvasBackgroundIsPainted` |
+| Card geometry aligns at display-cell widths | `TestCardGeometryIsAligned` |
+| Allowance units are sanitized | `TestAllowanceUnitSanitization` |
+| Scenario switch clears stale history | `TestScenarioChangeClearsHistory` |
+| Settings rows are reachable and save | `TestSettingsTabReachesEveryControl` |
+| History disclosures survive required sizes | `TestHistoryDisclosuresAtSmallSizes` |
+| Details pane stays within its allocation | `TestDetailsWidePaneFitsAllocation` |
+| Compact keeps units and selected context | `TestCompactPreservesUnitsAndContext` |
+| Over-limit keeps 0% left and its qualifier | `TestOverLimitKeepsZeroLeftAndQualifier` |
+| Search query remains visible at compact width | `TestSearchQueryVisibleAtCompactWidth` |
+| Successful refresh outcome is shown in Details | `TestRefreshOutcomeVisibleInDetails` |
+| History scrolling reaches the final daily values | `TestHistoryScrollReachesLastDailyValue` |
+| History tab shares range and scrolling | `TestHistoryTabKeysAndScrolling` |
+| Cost provenance and coverage at full/compact sizes | `TestHistoryCostProvenanceLabels` |
+| Long detail values wrap and remain scrollable | `TestLongDetailValuesWrapAndRemainAccessible` |
+| Compact footer counts match rendered sources | `TestCompactRenderedSourceCountMatchesFooter` |
+| Unicode wrapping and label order | `TestWrapTextUnicodeAndOrder` |
+| Long allowance labels remain accessible | `TestLongAllowanceLabelAccessible` |
+| Compact preserves long units | `TestCompactPreservesLongUnitAt80` |
+| Retained auth data is labelled | `TestAuthFailureLabelsRetainedData` |
+| Generic history coverage metadata is accurate | `TestGenericHistoryCoverageMetadata` |
+| Narrow library preserves kind, availability, shortcuts | `TestNarrowLibraryKeepsDistinctionsAndShortcuts` |
+| Tiny history and unavailable transition are safe/honest | `TestTinyHistoryAndUnavailableTransition` |
+| Privacy masks sensitive normalized detail values | `TestPrivacyHidesSensitiveDetailValues` |
+| Details metadata remains fully scrollable | `TestDetailMetadataFullyScrollable` |
+| Absolute resets use local timezone | `TestResetAbsoluteUsesLocalTimezone` |
+| Explicit cards survives a short terminal | `TestExplicitCardsLayoutOnShortTerminal` |
+| Details show raw allowance alongside percentage | `TestDetailsShowRawAllowanceAlongsidePercent` |
+| Long balances remain accessible | `TestLongBalanceRemainsAccessible` |
+| Reduced compact preserves units at 60×20 | `TestCompactReducedPreservesUnitsAt60` |
+| Long details headings and section titles remain accessible | `TestLongDetailsHeadingAndSectionTitlesAccessible` |
+| History charts/models stay scrollable at required sizes | `TestHistoryChartsAndModelsRemainScrollable` |
+| Compact rows label retained auth data | `TestCompactRowsLabelRetainedAuthData` |
+| Unpinned card test detects pin mutations | `TestUnpinnedCardOmitsPinnedLabel` |
+| Settings success clears previous error | `TestSettingsSuccessClearsPreviousError` |
+| Over-limit reported percentage remains visible | `TestOverLimitPreservesReportedPercentage` |
+| Retained balance/detail data without timestamps is labelled | `TestRetainedBalanceWithoutTimestampIsLabelled` |
+| Complete source names are accessible in Details | `TestCompleteSourceNameAccessibleInDetails` |
+| Empty pinned filter is not first-launch copy | `TestEmptyPinnedFilterIsNotFirstLaunchCopy` |
+| No-results search preserves/restores tracked collection | `TestNoResultsScenarioRestoresCollectionAfterClearing` |
+| Retained card age stays visible with extra windows | `TestCardRetainedAgeVisibleWithExtraWindows` |
+| Long history model names/totals remain accessible | `TestLongHistoryModelNamesAndTotalsStayAccessible` |
+| Narrow history range hint and help are present | `TestNarrowHistoryRangeHintAndHelp` |
+| Compact left column shows remaining quantity | `TestCompactLeftColumnShowsRemainingQuantity` |
+| History partial flag is independently disclosed | `TestHistoryPartialFlagDisclosedIndependentlyOfProse` |
+| Reduced compact keeps reset countdown | `TestReducedCompactKeepsResetCountdown` |
+| History coverage/provenance wrap to final suffix | `TestHistoryCoverageAndProvenanceWrapToSuffix` |
+| History display reuses cached snapshot until refresh | `TestHistoryDisplayReusesSnapshotUntilRefresh` |
+| Invalid quantities are not rendered as measurements | `TestInvalidQuantitiesAreNotRenderedAsMeasurements` |
+| Narrow details keeps retained warning alongside allowances | `TestNarrowDetailsShowsRetainedWarningAlongsideAllowances` |
+| Non-auth failures retain the prior-data label | `TestMalformedFailureRetainsPriorDataLabel` |
+| Reduced compact aligns primary resets | `TestReducedCompactPrimaryResetAlignment` |
+| Narrow details shows stale state without an error | `TestNarrowDetailsShowsStaleStateWithoutError` |
+| 30-day chart fits 60-column history | `TestThirtyDayChartFitsNarrowWidth` |
+| Settings exposes and marks auto layout | `TestSettingsShowsAutoLayoutChoice` |
+| Used-only compact values do not imply remaining | `TestCompactUsedWithoutLimitShowsRemainingUnavailable` |
+| Cards preserve realistic quantity units | `TestCardPreservesRealisticQuantityUnit` |
+| Overlapping refresh does not strand sources | `TestOverlappingRefreshDoesNotStrandQueuedSource` |
+| History boundary navigation keeps cache | `TestHistoryBoundaryNavigationKeepsCachedSnapshot` |
+| Compact large quantities keep units/columns | `TestCompactLargeQuantitiesKeepUnitsAndColumns` |
+| Narrow chart keeps early range and gaps | `TestNarrowChartKeepsEarlyRangeAndGaps` |
+| Card balances keep amounts with long labels | `TestCardBalanceKeepsAmountWithLongLabel` |
+| Colored navigation uses display-cell width | `TestColoredNavigationUsesDisplayCellWidth` |
+| Card refresh shows scheduling state and status | `TestCardRefreshShowsSchedulingStateAndStatus` |
+| Balance freshness uses its own sample time | `TestBalanceFreshnessUsesItsOwnSampleTime` |
+| Refresh footer keeps essential hints at 80 | `TestRefreshFooterKeepsEssentialHintsAt80` |
+| Leaving settings via Help restores committed theme | `TestLeavingSettingsThroughHelpRestoresCommittedTheme` |
+| Leaving settings via picker restores committed theme | `TestLeavingSettingsThroughPickerRestoresCommittedTheme` |
+| Canvas/surface carry semantic text foreground | `TestCanvasAndSurfaceCarrySemanticForeground` |
+| Fractional over-limit values are preserved | `TestFractionalOverLimitPreservedAtRequiredSizes` |
+| Compact pagination accounts for current-page rows | `TestCompactPaginationAccountsForCurrentPageRows` |
+| Mixed compact pagination matches footer and context | `TestCompactMixedPaginationMatchesFooterAndKeepsContext` |
+| Picker availability remains visible at breakpoints | `TestPickerAvailabilityVisibleAtBreakpoints` |
 | Normalized fixtures match the reference fields | `TestNormalizedFixtureParity`, `TestFixtureParityNamesTheDifferingField` |
 | Base fixture and scenario headline values reject mutations | `TestNormalizedFixtureParity`, `TestAttentionScenarioMatchesSharedReference` |
 

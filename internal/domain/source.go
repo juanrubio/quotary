@@ -258,6 +258,7 @@ type SourceDescriptor struct {
 	Variant      Variant
 	Kind         ServiceKind
 	Capabilities Capabilities
+	Available    bool
 	Tracked      bool
 	Pinned       bool
 	PinOrder     int

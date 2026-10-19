@@ -97,6 +97,7 @@ func (b *Backend) Catalog(context.Context) (backend.CatalogSnapshot, error) {
 				Variant:      variant,
 				Kind:         kind,
 				Capabilities: demoCapabilities(entry.Provider, kind),
+				Available:    true,
 				Tracked:      b.tracks(key, kind),
 				LastRead:     domain.StatusUnknown,
 			}
@@ -606,10 +607,12 @@ func genericHistory(key, provider string, days int, clock time.Time) domain.Hist
 	_, _ = hash.Write([]byte(key))
 	var total int64
 	var buckets []domain.HistoryDay
+	var missing []string
 	for i := days - 1; i >= 0; i-- {
 		day := clock.AddDate(0, 0, -i)
 		if i%11 == 0 && i != 0 {
 			buckets = append(buckets, domain.HistoryDay{Day: day.Format("2006-01-02")})
+			missing = append(missing, day.Format("2006-01-02"))
 			continue
 		}
 		tokens := int64(120000 + (hash.Sum32()+uint32(i*7919))%400000)
@@ -631,7 +634,9 @@ func genericHistory(key, provider string, days int, clock time.Time) domain.Hist
 		Priced:      false,
 		Provenance:  "Fictional local token history",
 		Coverage:    "Partial coverage · demo data",
-		Partial:     true,
+		Partial:     len(missing) > 0,
+		Incomplete:  len(missing),
+		MissingDays: missing,
 	}
 	if parsed, err := domain.ParseSourceKey(key); err == nil {
 		result.Key = parsed

@@ -72,7 +72,7 @@ func TestDemoModelUsesBackendAndSwitchesScenarios(t *testing.T) {
 	}
 	m.Update(tea.KeyPressMsg{Code: '2', Text: "2"})
 	view = m.View().Content
-	if !strings.Contains(view, "Scenario: attention") || !strings.Contains(view, "exhausted") {
+	if !strings.Contains(view, "Scenario: attention") || !strings.Contains(view, "Exhausted") {
 		t.Fatalf("attention scenario not painted:\n%s", view)
 	}
 	m.Update(tea.KeyPressMsg{Code: '4', Text: "4"})
@@ -88,15 +88,15 @@ func TestDemoRefreshTransitionsVisible(t *testing.T) {
 	}
 	m := newModel(Options{Demo: true, Session: runtime})
 	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
-	if !strings.Contains(m.View().Content, "queued") {
+	if !strings.Contains(m.View().Content, "Queued") {
 		t.Fatalf("queued state not visible:\n%s", m.View().Content)
 	}
 	m.Update(refreshTickMsg{key: m.refreshKey, generation: m.refreshGen})
-	if !strings.Contains(m.View().Content, "fetching") {
+	if !strings.Contains(m.View().Content, "Fetching") {
 		t.Fatalf("fetching state not visible:\n%s", m.View().Content)
 	}
 	m.Update(refreshTickMsg{key: m.refreshKey, generation: m.refreshGen})
-	if strings.Contains(m.View().Content, "queued") || strings.Contains(m.View().Content, "fetching") {
+	if strings.Contains(m.View().Content, "Queued") || strings.Contains(m.View().Content, "Fetching") {
 		t.Fatalf("refresh did not return to current:\n%s", m.View().Content)
 	}
 }
@@ -121,7 +121,7 @@ func TestRefreshCompletesOriginalSourceAfterNavigation(t *testing.T) {
 	}
 	m := newModel(Options{Demo: true, Session: runtime})
 	m.width, m.height = 120, 40
-	original := m.snapshots[0].Key.String()
+	original := m.visible[0].Key.String()
 	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
 	generation := m.refreshGen
 	m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
@@ -138,7 +138,7 @@ func TestScenarioSwitchInvalidatesPendingRefresh(t *testing.T) {
 		t.Fatal(err)
 	}
 	m := newModel(Options{Demo: true, Session: runtime})
-	original := m.snapshots[0].Key.String()
+	original := m.visible[0].Key.String()
 	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
 	generation := m.refreshGen
 	m.Update(tea.KeyPressMsg{Code: '2', Text: "2"})

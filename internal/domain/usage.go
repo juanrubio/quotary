@@ -152,8 +152,18 @@ type Balance struct {
 
 // DetailRow is a label/value pair from supported detail payloads.
 type DetailRow struct {
-	Label string
-	Value string
+	Label     string
+	Value     string
+	Sensitive bool
+}
+
+// LooksSensitive reports values that commonly identify a person or local path.
+// Adapters should also set DetailRow.Sensitive when their payload is known to
+// carry account identity that this conservative heuristic cannot recognize.
+func LooksSensitive(value string) bool {
+	value = strings.TrimSpace(value)
+	return strings.Contains(value, "@") || strings.HasPrefix(value, "/") ||
+		strings.HasPrefix(value, "~/") || strings.HasPrefix(value, ".\\")
 }
 
 // DetailBar is one supported proportional bar. Nil means unavailable; zero is
@@ -223,22 +233,23 @@ type Money struct {
 // HistorySnapshot is normalized local history. TotalTokens, model values, and
 // Cost are optional. Timezone identifies the bucket boundary.
 type HistorySnapshot struct {
-	Key         SourceKey
-	Days        int
-	Start       time.Time
-	End         time.Time
-	Timezone    string
-	Buckets     []HistoryDay
-	TotalTokens *int64
-	Models      []ModelTotal
-	Cost        *Money
-	Currency    string
-	Priced      bool
-	Provenance  string
-	Coverage    string
-	Partial     bool
-	Incomplete  int
-	MissingDays []string
+	Key          SourceKey
+	Days         int
+	Start        time.Time
+	End          time.Time
+	Timezone     string
+	Buckets      []HistoryDay
+	TotalTokens  *int64
+	Models       []ModelTotal
+	Cost         *Money
+	CostReported bool
+	Currency     string
+	Priced       bool
+	Provenance   string
+	Coverage     string
+	Partial      bool
+	Incomplete   int
+	MissingDays  []string
 }
 
 // RefreshState tracks scheduling without conflating attempt and success.
@@ -262,6 +273,14 @@ func GaugeCells(remaining *float64, width int) int {
 
 func finite(value float64) bool {
 	return !math.IsNaN(value) && !math.IsInf(value, 0)
+}
+
+// ValidNumber reports a finite floating-point measurement.
+func ValidNumber(value float64) bool { return finite(value) }
+
+// ValidQuantity reports a finite, non-negative reported quantity.
+func ValidQuantity(value *float64) bool {
+	return value != nil && finite(*value) && *value >= 0
 }
 
 // GaugeText renders a ten-cell gauge, using ASCII when requested.

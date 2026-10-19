@@ -1,0 +1,40 @@
+[38;2;230;237;243;48;2;11;16;32m  [1;38;2;125;211;252mQUOTARY[m    [38;2;166;178;195mYour AI subscriptions, at a glance[m                                                  [38;2;166;178;195mDEMO · fictional data  [m[m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;166;178;195m24 sources · 24 current · 2 attention[m    [38;2;166;178;195mScenario: subscription · 2026-10-16T14:00:00Z[m                                [m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;52;65;85m────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[m  [m
+[38;2;230;237;243;48;2;11;16;32m  [1;38;2;125;211;252m[Overview][m   [38;2;166;178;195mDetails[m   [38;2;166;178;195mHistory[m   [38;2;166;178;195m[ All tracked ][m                                    [38;2;166;178;195m / Search   f Filter   p Sources[m  [m
+[38;2;230;237;243;48;2;11;16;32m  [1;38;2;125;211;252mSource library[m  [38;2;166;178;195m106 providers · 107 selectable sources[m                                                                [m
+[38;2;230;237;243;48;2;11;16;32m                                                                                                                        [m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;230;237;243mTrack the subscriptions you use.[m                                                                      [38;2;166;178;195m24 tracked[m      [m
+[38;2;230;237;243;48;2;11;16;32m                                                                                                                        [m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;125;211;252m[ Track all subscriptions ][m    [38;2;166;178;195mTracking does not sign you in.[m                                                         [m
+[38;2;230;237;243;48;2;11;16;32m                                                                                                                        [m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;166;178;195m/ Search the full catalog: [m[38;2;230;237;243m[m                                                                                           [m
+[38;2;230;237;243;48;2;11;16;32m                                                                                                                        [m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;166;178;195m       Source                                  Kind                Catalog     Last reading[m                           [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;125;211;252m> [x]  Claude                                  subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Codex                                   subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Muse Code                               subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Google · Gemini app                     subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Antigravity                             subscription        available   Low[m                                      [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Cursor                                  subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Copilot                                 subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Windsurf                                subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Kimi Code                               subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Google · Gemini CLI                     subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Kiro                                    subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  JetBrains AI                            subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Abacus AI                               unknown             available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Aerostack                               unknown             available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  ai&                                     unknown             available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Aixy                                    unknown             available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Alibaba                                 metered_api         available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Alibaba Token Plan                      unknown             available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Amp                                     subscription        available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Atlas Cloud                             subscription        available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [x]  Augment                                 subscription        available   Current[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  Azure OpenAI                            metered_api         available   Manual setup · active probe[m              [m
+[38;2;230;237;243;48;2;11;16;32m[38;2;230;237;243m  [ ]  AWS Bedrock                             metered_api         available   Unknown[m                                  [m
+[38;2;230;237;243;48;2;11;16;32m                                                                                                                        [m
+[38;2;230;237;243;48;2;11;16;32m                                                                                                                        [m
+[38;2;230;237;243;48;2;11;16;32m  [38;2;52;65;85m────────────────────────────────────────────────────────────────────────────────────────────────────────────────────[m  [m
+[38;2;230;237;243;48;2;11;16;32m  ↑↓ Move  Space Track  a Track subscriptions  / Search  Esc Back  ? Help  q Quit                            [38;2;166;178;195m  1–1 / 107[m[m

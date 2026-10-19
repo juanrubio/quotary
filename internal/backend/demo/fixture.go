@@ -217,6 +217,7 @@ func (f fixtures) historySnapshot(clock time.Time) domain.HistorySnapshot {
 		Provenance:  "Muse local token history",
 		Coverage:    "Partial coverage · this machine only",
 		Partial:     true,
+		Incomplete:  1,
 	}
 	for _, day := range f.History.Days {
 		var tokens *int64

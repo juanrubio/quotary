@@ -19,6 +19,7 @@ const (
 type Layout string
 
 const (
+	LayoutAuto    Layout = "auto"
 	LayoutCards   Layout = "cards"
 	LayoutCompact Layout = "compact"
 )
@@ -43,6 +44,7 @@ type Preferences struct {
 	Pins              []string   `json:"pins"`
 	IntervalSeconds   int        `json:"intervalSeconds"`
 	Privacy           bool       `json:"privacy"`
+	Monochrome        bool       `json:"monochrome"`
 	BackendPath       string     `json:"backendPath,omitempty"`
 	BackendConfigPath string     `json:"backendConfigPath,omitempty"`
 }
@@ -53,7 +55,7 @@ func Defaults() Preferences {
 		Version:         1,
 		Theme:           ThemeGreen,
 		Appearance:      AppearanceAuto,
-		Layout:          LayoutCards,
+		Layout:          LayoutAuto,
 		IntervalSeconds: 300,
 		Privacy:         true,
 	}
@@ -78,8 +80,8 @@ func Normalize(prefs Preferences) Preferences {
 	if prefs.Appearance != AppearanceDark && prefs.Appearance != AppearanceLight {
 		prefs.Appearance = AppearanceAuto
 	}
-	if prefs.Layout != LayoutCompact {
-		prefs.Layout = LayoutCards
+	if prefs.Layout != LayoutCompact && prefs.Layout != LayoutCards {
+		prefs.Layout = LayoutAuto
 	}
 	if prefs.IntervalSeconds < 60 {
 		prefs.IntervalSeconds = 300
