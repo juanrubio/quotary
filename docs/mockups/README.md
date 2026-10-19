@@ -145,6 +145,8 @@ are conveniences, not a substitute for the keyboard contract.
 - [mockup.js](mockup.js): character-grid renderer and reference interactions.
 - [fixtures.js](fixtures.js): serializable fictional domain fixtures and the
   public catalog snapshot. These are not raw CodexBar response fixtures.
+- [scenarios.js](scenarios.js): shared attention-scenario transforms consumed by
+  both the browser reference and the Go parity tests.
 - [capture.py](capture.py): exports the terminal only and exercises core review
   interactions in an isolated headless browser.
 - [screens/manifest.json](screens/manifest.json): exported image and text inventory.

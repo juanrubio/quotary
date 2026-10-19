@@ -1,0 +1,7 @@
+Quotary Phase 2 startup isolation evidence
+date: 2026-10-19T09:57:46Z
+
+=== RUN   TestDemoStartupMakesNoExternalAccess
+--- PASS: TestDemoStartupMakesNoExternalAccess (1.31s)
+PASS
+ok  	github.com/juanrubio/quotary/internal/backend/demo	1.311s

@@ -334,12 +334,15 @@
   function setScene(scene) {
     const keep={w:state.w,h:state.h,theme:state.theme};state={...initial(),...keep,scenario:scene};
     if(scene==='attention'){
-      const change=(id,patch)=>Object.assign(state.sources.find(s=>s.id===id),patch);
-      change('windsurf:configured',{state:'signin',windows:[],age:'18s'});
-      change('cursor:configured',{state:'stale',age:'42m'});
-      change('kimi:configured',{state:'missing',windows:[{label:'Plan',left:null,reset:null}],age:'18s'});
-      change('antigravity:configured',{state:'exhausted',windows:state.sources.find(s=>s.provider==='antigravity').windows.map((a,i)=>i===0?{...a,left:0}:a)});
-      change('zed:configured',{state:'unavailable',windows:[],age:'16s'});
+      const transforms=globalThis.QUOTARY_SCENARIOS?.attention||{};
+      for(const [provider,patch] of Object.entries(transforms)){
+        const source=state.sources.find(s=>s.provider===provider);
+        if(!source)continue;
+        if(patch.windows!==undefined)source.windows=clone(patch.windows);
+        if(patch.age!==undefined)source.age=patch.age;
+        if(patch.state!==undefined)source.state=patch.state;
+        if(patch.windowIndex!==undefined)source.windows=source.windows.map((a,i)=>i===patch.windowIndex?{...a,left:patch.windowLeft}:a);
+      }
       state.filter='attention';state.selected='antigravity:configured';
     }else if(scene==='detail'){state.view='detail';state.selected='antigravity:configured';}
     else if(scene==='history'){state.view='history';state.selected='muse:configured';}

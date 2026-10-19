@@ -24,4 +24,19 @@ func TestDemoFlagRegistered(t *testing.T) {
 	if cmd.Flags().Lookup("demo") == nil {
 		t.Fatal("--demo flag is missing")
 	}
+	if cmd.Flags().Lookup("scenario") == nil {
+		t.Fatal("--scenario flag is missing")
+	}
+}
+
+func TestDemoDepsUseInMemoryFixtureFS(t *testing.T) {
+	deps := demoDeps()
+	if deps.Store == nil || deps.Fixtures == nil || deps.Runner == nil {
+		t.Fatal("demo deps are incomplete")
+	}
+	if file, err := deps.Fixtures.Open("fixtures.json"); err != nil {
+		t.Fatal(err)
+	} else if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
 }

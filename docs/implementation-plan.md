@@ -604,7 +604,7 @@ Phase 9 closes every row.
 | Demo communicates product with many fictional sources, no setup | P2, P9 | Demo scenario tests, offline safety test, captures |
 | Catalog entries discoverable; tracking independent of enablement | P7 | Picker/catalog tests with disabled providers |
 | Bulk tracking includes subscriptions and excludes probes | P7 | Manifest eligibility and bulk-selection tests |
-| 24 tracked and 107-source mixed collection navigable | P2, P4, P6 | Demo scenarios plus stress/race runs |
+| 24 tracked and 107-source mixed collection navigable | P2, P4, P6 | `TestSubscriptionScenarioHasLowReadings`, `TestFullCatalogScenarioTracksSubscriptions`; UI stress in P4/P6 |
 | Selection preserved through refresh/filter/sort/resize | P4 | Interaction tests by source identity |
 | Screens meet the TUI specification | P3–P4 | Goldens, captures, manual visual review |
 | Green/Blue/Amber/Monokai in light/dark; monochrome keeps state cues | P3–P4 | Palette contrast tests, monochrome golden, stored captures |
@@ -616,7 +616,7 @@ Phase 9 closes every row.
 | Sample/receipt distinct; countdowns local | P1, P6 | `TestFreshness`, `TestResetLabels`; scheduler tests in P6 |
 | Account/source changes cannot inherit readings or late results | P1, P6 | `TestSourceKey*`, `TestSourceKeyCoalescing`, `TestSourceOrderingUsesStableTieBreak`, `TestImportBoundaries`; generation tests in P6 |
 | Unknown names/Unicode/control sequences cannot break or inject | P3, P9 | Sanitization, truncation, fuzz tests |
-| Demo makes no backend/credential/session access | P2 | Injected exec/fs/config seams assert zero access |
+| Demo makes no backend/credential/session access | P2 | `TestRuntimeReadsOnlyInMemoryFixtures`, `TestRuntimeUsesInjectedRunner`, `TestDemoProductionSourcesHaveNoExternalIO` |
 | Cancellation/timeout/quit clean up and restore terminal | P5, P6, P9 | Runner, quit, and signal tests |
 | Claude/Codex extra windows and supported history | P8 | Live evidence records |
 | Muse omitted windows and token-only history | P8 | Live evidence records |
@@ -656,6 +656,37 @@ unchecked box without explanation.
 | Config defaults, normalization, interval, slice ownership, rejected save | `internal/config/store_test.go` |
 | Domain/adapter/TUI import boundaries | `TestImportBoundaries`, `TestImportBoundaryDetectsViolation` |
 | Backend contract seam | `internal/backend/backend_test.go` |
+
+### 7.4 Phase 2 verification
+
+| Phase 2 requirement | Verification |
+| --- | --- |
+| Fixtures agree with the browser reference and name the differing field | `TestFixtureParityWithMockups`, `TestFixtureParityNamesTheDifferingField` |
+| Deterministic backend for every scenario | `TestScenariosAreDeterministic` |
+| Subscription desk has 24 tracked sources and low readings | `TestSubscriptionScenarioHasLowReadings` |
+| Attention states are distinct and truthful | `TestAttentionScenarioStates` |
+| Full catalog has 106 IDs and 107 selectable sources | `TestCatalogIsBroadAndClassified`, `TestFullCatalogScenarioTracksSubscriptions` |
+| Empty/setup has no tracked sources | `TestEmptyScenarioHasNoTrackedSources` |
+| Muse history is token-only with a real gap | `TestMuseHistoryIsTokenOnly` |
+| History capabilities match readers | `TestHistoryCapabilitiesMatchReaders` |
+| Demo is offline and does not read user state or execute processes | `TestRuntimeReadsOnlyInMemoryFixtures`, `TestRuntimeUsesInjectedRunner`, `TestScenarioSwitchPreservesInjectedFixtures`, `TestDemoDepsUseInMemoryFixtureFS`, `TestDemoProductionSourcesHaveNoExternalIO`, `TestOfflineImportCheckDetectsViolation`, `TestDemoStartupMakesNoExternalAccess` (strace + negative control); successful trace in `docs/evidence/phase-2-isolation.txt`. Sandboxes without ptrace skip this test; static import checks still run. |
+| Unknown scenario is rejected | `TestUnknownScenarioRejected` |
+| History requests validate and canonicalize scope | `TestHistoryScopeValidation` |
+| Refresh completion is bound to its original source and scenario | `TestRefreshCompletesOriginalSourceAfterNavigation`, `TestScenarioSwitchInvalidatesPendingRefresh` |
+| No-results preset preserves the collection and query | `TestNoResultsPresetPreservesCollection`, `TestDemoNoResultsScenarioPreservesQuery` |
+| Attention transforms and every tracked window match the shared browser scenario definitions; sibling-window, numeric, null, and membership mutations fail | `TestAttentionScenarioMatchesSharedReference` |
+| CLI constructs demo with in-memory fixture and runner seams | `TestDemoDepsUseInMemoryFixtureFS`, `TestRuntimeReadsOnlyInMemoryFixtures`, `TestRuntimeUsesInjectedRunner` |
+| Demo startup uses backend data, scenarios, memory preferences, and refresh stages | `TestDemoModelUsesBackendAndSwitchesScenarios`, `TestDemoRefreshTransitionsVisible`, `TestRuntimeRefreshTransitions` |
+| Demo preferences persist in-session and reset between sessions | `TestRuntimeTrackingAndPinningAreInMemory`, `TestRuntimeResetBetweenSessions` |
+| Setup/missing backend is actionable | `TestSetupScenarioHasNoBackend`, `TestDemoSetupScenarioShowsBackendMissing` |
+| Non-subscription credit readings are honest | `TestCreditSourceHasBalanceOnlyReading` |
+| Unsupported details are disclosed | `TestAttentionIncludesUnsupportedDetailDisclosure` |
+| Accounts use the unknown sentinel | `TestDemoAccountsUseUnknownSentinel` |
+| Window keys are stable and unique | `TestWindowKeysAreUnique` |
+| Invalid variants and conflicting scopes are rejected | `TestUsageRejectsUnvalidatedVariantsAndScopes`, `TestUsageRejectsConflictingScopes` |
+| Returned history owns its values | `TestHistoryFixturesAreOwnedByBackend` |
+| Normalized fixtures match the reference fields | `TestNormalizedFixtureParity`, `TestFixtureParityNamesTheDifferingField` |
+| Base fixture and scenario headline values reject mutations | `TestNormalizedFixtureParity`, `TestAttentionScenarioMatchesSharedReference` |
 
 ## 8. Suggested commit/PR sequence
 
