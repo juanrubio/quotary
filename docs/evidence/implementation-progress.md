@@ -5,7 +5,7 @@ External review: separate Codex CLI process using GPT-6 Astra. See
 
 | Phase | Status | Commit | Checks | Review verdict | Open items |
 | --- | --- | --- | --- | --- | --- |
-| 0 — Repository and tooling | complete | pending | make check, make race, docs-check, PTY restoration | PASS (4 rounds) | none |
+| 0 — Repository and tooling | complete | e605f7b | make check, make race, docs-check, PTY restoration | PASS (4 rounds) | none |
 | 1 — Domain and seams | not started | — | — | — | — |
 | 2 — Demo backend | not started | — | — | — | — |
 | 3 — TUI and themes | not started | — | — | — | — |
