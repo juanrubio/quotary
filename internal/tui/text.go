@@ -52,6 +52,33 @@ func padLeft(value string, width int) string {
 	return strings.Repeat(" ", gap) + value
 }
 
+func cleanInput(value string) string {
+	value = ansi.Strip(value)
+	var b strings.Builder
+	for _, r := range value {
+		if unicode.IsControl(r) && r != ' ' {
+			continue
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+func tailWidth(value string, width int) string {
+	if width <= 0 {
+		return ""
+	}
+	runes := []rune(value)
+	start := len(runes)
+	for start > 0 && ansi.StringWidth(string(runes[start-1:])) <= width {
+		start--
+	}
+	if start == len(runes) {
+		return ""
+	}
+	return string(runes[start:])
+}
+
 func wrapText(value string, width int) []string {
 	value = cleanText(value)
 	if width <= 0 {

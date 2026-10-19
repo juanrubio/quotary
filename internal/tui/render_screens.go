@@ -73,7 +73,7 @@ func (m *model) renderDetails(width, height int) []string {
 func (m *model) detailLeft(snapshot domain.UsageSnapshot, width int) []string {
 	var lines []string
 	state := m.effectiveState(snapshot)
-	if (snapshot.Error != nil || state == domain.StatusStale) && hasMeasurements(snapshot) {
+	if m.retainedPrior(snapshot) && hasMeasurements(snapshot) {
 		lines = append(lines, "  "+m.styleState(state, m.stateDisplay(snapshot)+" · "+ageLabel(snapshot, m.now())), "")
 	}
 	for _, window := range snapshot.Windows {
@@ -434,14 +434,7 @@ func (m *model) renderPicker(width, height int) []string {
 	}
 	header += "Last reading"
 	lines = append(lines, "  "+m.theme.Muted.Render(header))
-	pageSize := max(1, height-len(lines)-2)
-	start := m.pageStart(pageSize)
-	if len(entries) > 0 && m.pickerIndex < start {
-		start = m.pickerIndex / pageSize * pageSize
-	}
-	if m.pickerIndex >= start+pageSize {
-		start = m.pickerIndex / pageSize * pageSize
-	}
+	start, end := m.pickerViewport(height)
 	nameWidth, kindWidth := 40, 20
 	if width < 110 {
 		nameWidth, kindWidth = 30, 16
@@ -449,7 +442,7 @@ func (m *model) renderPicker(width, height int) []string {
 	if width < 90 {
 		nameWidth, kindWidth = 22, 0
 	}
-	for index := start; index < len(entries) && len(lines) < height-2; index++ {
+	for index := start; index < end && len(lines) < height-2; index++ {
 		descriptor := entries[index]
 		prefix := "  "
 		if index == m.pickerIndex {
@@ -509,12 +502,40 @@ func (m *model) renderSettings(width, height int) []string {
 			themeLine += m.theme.Muted.Render(label) + "  "
 		}
 	}
+	backend := cleanText(prefs.BackendPath)
+	configPath := cleanText(prefs.BackendConfigPath)
+	masked := "Hidden · privacy mode"
+	if backend == "" {
+		backend = "auto-detect on PATH"
+	}
+	if configPath == "" {
+		configPath = "auto-detect"
+	}
+	if m.settingsEditing {
+		field := tailWidth(cleanInput(m.settingsInput), max(8, width-20)) + "▌"
+		if m.settingsIdx == 6 {
+			backend = field
+			if prefs.Privacy {
+				configPath = masked
+			}
+		} else {
+			configPath = field
+			if prefs.Privacy {
+				backend = masked
+			}
+		}
+	} else if prefs.Privacy {
+		backend, configPath = masked, masked
+	}
 	rows := []string{
 		"  Theme        " + themeLine,
 		"  Appearance   " + m.choiceRow([]string{"auto", "dark", "light"}, string(prefs.Appearance)),
 		"  Layout       " + m.choiceRow([]string{"auto", "cards", "compact"}, string(prefs.Layout)),
+		fmt.Sprintf("  Interval     %d s  (←→ adjust, 60 s minimum)", prefs.IntervalSeconds),
 		"  Privacy      " + m.choiceRow([]string{"on", "off"}, map[bool]string{true: "on", false: "off"}[prefs.Privacy]),
 		"  Monochrome   " + m.choiceRow([]string{"on", "off"}, map[bool]string{true: "on", false: "off"}[prefs.Monochrome]),
+		"  Backend path " + backend,
+		"  Config path  " + configPath,
 	}
 	lines := []string{
 		"  " + m.theme.Accent.Bold(true).Render("Settings"),
@@ -530,10 +551,9 @@ func (m *model) renderSettings(width, height int) []string {
 	}
 	lines = append(lines,
 		"",
-		"  "+m.theme.Muted.Render("Theme changes apply immediately and are saved with Enter."),
-		"  "+m.theme.Muted.Render("Refresh interval default: 5 minutes (60 s minimum)."),
+		"  "+m.theme.Muted.Render("Theme changes preview immediately. Enter saves; Esc cancels."),
+		"  "+m.theme.Muted.Render("Enter a path row to edit; type, then Enter to commit."),
 		"",
-		"  "+m.theme.Muted.Render("Backend path: ")+m.theme.Text.Render(m.backendPathLabel(prefs)),
 	)
 	for len(lines) < height {
 		lines = append(lines, "")
@@ -553,22 +573,27 @@ func (m *model) choiceRow(values []string, current string) string {
 	return strings.Join(parts, "  ")
 }
 
+var helpRows = [][2]string{
+	{"↑↓←→ / j k", "Move between sources"},
+	{"Enter / Esc", "Open details / return"},
+	{"Tab / Shift+Tab", "Move fields or switch details tabs"},
+	{"↑↓ / j k", "Choose a theme or move between fields"},
+	{"← / →", "Adjust the focused setting"},
+	{"e", "Edit a backend path field"},
+	{"a", "Track all subscriptions in the picker"},
+	{"[ / ]", "Change history range"},
+	{"/", "Search the current collection"},
+	{"f / s", "Cycle filter / sort"},
+	{"Space", "Pin source / track in library"},
+	{"p / l", "Source library / layout"},
+	{"r / R", "Refresh selected / all"},
+	{"PgUp / PgDn", "Page through the collection"},
+	{",", "Open settings"},
+	{"1–6", "Switch demo scenario"},
+	{"? / q / Ctrl+C", "Help / quit"},
+}
+
 func (m *model) renderHelp(width, height int) []string {
-	rows := [][2]string{
-		{"↑↓←→ / j k", "Move between sources"},
-		{"Enter / Esc", "Open details / return"},
-		{"Tab / Shift+Tab", "Switch details tabs"},
-		{"[ / ]", "Change history range"},
-		{"/", "Search the current collection"},
-		{"f / s", "Cycle filter / sort"},
-		{"Space", "Pin source / track in library"},
-		{"p / l", "Source library / layout"},
-		{"r / R", "Refresh selected / all"},
-		{"PgUp / PgDn", "Page through the collection"},
-		{",", "Open settings"},
-		{"1–6", "Switch demo scenario"},
-		{"? / q / Ctrl+C", "Help / quit"},
-	}
 	lines := []string{
 		"  " + m.theme.Accent.Bold(true).Render("Keyboard guide"),
 		m.rule(width),
@@ -576,11 +601,9 @@ func (m *model) renderHelp(width, height int) []string {
 		"  A keyboard-first desk.",
 		"",
 	}
-	start := m.helpScroll
-	if start > len(rows)-1 {
-		start = max(0, len(rows)-1)
-	}
-	for _, row := range rows[start:] {
+	visibleRows := max(1, height-5)
+	start := min(m.helpScroll, max(0, len(helpRows)-visibleRows))
+	for _, row := range helpRows[start:] {
 		if len(lines) >= height {
 			break
 		}
@@ -589,8 +612,42 @@ func (m *model) renderHelp(width, height int) []string {
 	return lines
 }
 
+func (m *model) retainedPrior(snapshot domain.UsageSnapshot) bool {
+	if snapshot.Error != nil || snapshot.Quality == domain.QualityStale ||
+		snapshot.State == domain.StatusStale || snapshot.State == domain.StatusAuthFailed {
+		return true
+	}
+	if base, ok := m.baseStates[snapshot.Key.String()]; ok &&
+		(base == domain.StatusStale || base == domain.StatusAuthFailed) {
+		return true
+	}
+	for _, window := range snapshot.Windows {
+		if window.Quality == domain.QualityStale {
+			return true
+		}
+	}
+	interval := time.Duration(m.prefs.IntervalSeconds) * time.Second
+	if interval <= 0 {
+		interval = 5 * time.Minute
+	}
+	var received *time.Time
+	if !snapshot.ReceivedAt.IsZero() {
+		value := snapshot.ReceivedAt
+		received = &value
+	}
+	if domain.CheckFreshness(snapshot.SampleAt, received, m.now(), interval, false).Stale {
+		return true
+	}
+	for _, balance := range snapshot.Balances {
+		if balance.SampleAt != nil && domain.CheckFreshness(balance.SampleAt, nil, m.now(), interval, false).Stale {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *model) effectiveState(snapshot domain.UsageSnapshot) domain.SourceStatus {
-	if snapshot.Error == nil && (snapshot.State == domain.StatusQueued || snapshot.State == domain.StatusFetching) {
+	if snapshot.State == domain.StatusQueued || snapshot.State == domain.StatusFetching {
 		return snapshot.State
 	}
 	var received *time.Time
@@ -778,16 +835,6 @@ func (m *model) compactHistory(history domain.HistorySnapshot, width int) []stri
 	return lines
 }
 
-func (m *model) backendPathLabel(prefs config.Preferences) string {
-	if prefs.BackendPath == "" {
-		return "auto-detect codexbar on PATH"
-	}
-	if m.prefs.Privacy {
-		return "Hidden · privacy mode"
-	}
-	return cleanText(prefs.BackendPath)
-}
-
 func recordedDays(history domain.HistorySnapshot) int {
 	count := 0
 	for _, bucket := range history.Buckets {
@@ -801,7 +848,7 @@ func recordedDays(history domain.HistorySnapshot) int {
 func (m *model) stateDisplay(snapshot domain.UsageSnapshot) string {
 	state := m.effectiveState(snapshot)
 	label := stateLabel(state)
-	if (snapshot.Error != nil || state == domain.StatusStale) && hasMeasurements(snapshot) {
+	if m.retainedPrior(snapshot) && hasMeasurements(snapshot) {
 		label += " · prior"
 	}
 	return label

@@ -1,0 +1,43 @@
+Quotary Phase 4 verification
+date: 2026-10-19T16:51:21Z
+
+$ NO_COLOR=1 make check
+go vet ./...
+go tool github.com/golangci/golangci-lint/v2/cmd/golangci-lint run
+0 issues.
+go run ./internal/tools/docscheck .
+docs-check: ok
+go test ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+?   	github.com/juanrubio/quotary/internal/backend/codexbar	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+?   	github.com/juanrubio/quotary/internal/catalog	[no test files]
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+?   	github.com/juanrubio/quotary/internal/refresh	[no test files]
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	(cached)
+
+$ make race
+go test -race ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+?   	github.com/juanrubio/quotary/internal/backend/codexbar	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+?   	github.com/juanrubio/quotary/internal/catalog	[no test files]
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+?   	github.com/juanrubio/quotary/internal/refresh	[no test files]
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	(cached)
+
+$ go test ./internal/tui -run "TestGoldenMatrix|TestThemeSizeSmokeMatrix" -count=1
+ok  	github.com/juanrubio/quotary/internal/tui	12.731s
+
+$ ls internal/tui/testdata/golden | wc -l
+22

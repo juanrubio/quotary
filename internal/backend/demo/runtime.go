@@ -159,6 +159,14 @@ func (r *Runtime) AllSnapshots(ctx context.Context) []domain.UsageSnapshot {
 			} else {
 				snapshot.State = domain.StatusError
 			}
+			if entry := r.refresh[key]; entry != nil {
+				switch entry.stage {
+				case 1:
+					snapshot.State = domain.StatusQueued
+				case 2:
+					snapshot.State = domain.StatusFetching
+				}
+			}
 			snapshots = append(snapshots, snapshot)
 			continue
 		}
@@ -208,6 +216,22 @@ func (r *Runtime) AdvanceRefresh(key string) bool {
 		return true
 	case 2:
 		entry.stage = 0
+		snapshots, err := r.backend.Usage(context.Background(), backend.UsageRequest{SourceKey: key})
+		if err != nil {
+			scoped, ok := domain.AsScopedError(err)
+			if ok {
+				r.outcome[key] = scoped.Category.UserMessage()
+			} else {
+				r.outcome[key] = "Refresh failed"
+			}
+			return false
+		}
+		for _, snapshot := range snapshots {
+			if snapshot.Error != nil {
+				r.outcome[key] = snapshot.Error.Category.UserMessage()
+				return false
+			}
+		}
 		r.outcome[key] = "Success"
 		return false
 	default:
@@ -249,6 +273,7 @@ func (r *Runtime) SetScenario(scenario Scenario) error {
 	r.scenario = scenario
 	r.backend = next
 	r.refresh = map[string]*refreshEntry{}
+	r.outcome = map[string]string{}
 	prefs := r.store.Load()
 	prefs.Tracked = nil
 	prefs.Pins = nil

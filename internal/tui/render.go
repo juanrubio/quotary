@@ -124,11 +124,18 @@ func (m *model) navLine(width int) string {
 		filterText = map[string]string{"all": "[All]", "attention": "[Attention]", "pinned": "[Pinned]"}[m.filter]
 	}
 	left += "   " + m.theme.Muted.Render(filterText)
+	if !m.searching && m.query == "" {
+		if width >= 120 {
+			left += "   " + m.theme.Muted.Render("Sort: "+sortDescription(m.sortMode))
+		} else if width >= 80 {
+			left += "   " + m.theme.Muted.Render(sortShort(m.sortMode))
+		}
+	}
 	if m.searching || m.query != "" {
 		left += "   " + m.theme.Accent.Render("/ "+m.query+"▌")
 	}
 	right := ""
-	if width >= 88 && !m.searching && m.query == "" {
+	if width >= 88 && !m.searching && m.query == "" && m.sortMode == 0 {
 		right = m.theme.Muted.Render(" / Search   f Filter   p Sources") + "  "
 	}
 	return padRight(left, max(0, width-ansiWidth(right))) + right
@@ -144,7 +151,11 @@ func (m *model) renderFooter(width int) []string {
 			hints = "  ↑↓ Move  Space Track  a Track subscriptions  / Search  Esc Back  ? Help  q Quit"
 		}
 	case screenSettings:
-		hints = "  ↑↓ Setting  ←→ Change  Enter Save  Esc Cancel  q Quit"
+		if width < 100 {
+			hints = "  Tab Field  ←→ Adjust  E Edit  Enter Save  ? q"
+		} else {
+			hints = "  ↑↓ Theme  Tab Field  ←→ Adjust  E Edit  Enter Save  Esc Cancel  q Quit"
+		}
 	case screenHelp:
 		hints = "  Esc Return  ↑↓ Scroll  q Quit"
 	case screenHistory:
@@ -171,7 +182,14 @@ func (m *model) renderFooter(width int) []string {
 		}
 	}
 	if width < 80 {
-		hints = "  ↑↓  Enter  p  ?  q"
+		switch m.screen {
+		case screenSettings:
+			hints = "  Tab Field  ←→  E Edit  Enter Save  ? q"
+		case screenPicker:
+			hints = "  ↑↓  Space  a Track all  ? q"
+		default:
+			hints = "  ↑↓  Enter  p  ?  q"
+		}
 	}
 	return []string{m.rule(width), padRight(hints, max(0, width-ansiWidth(position))) + m.theme.Muted.Render(position)}
 }
@@ -185,6 +203,32 @@ func (m *model) rule(width int) string {
 		char = "-"
 	}
 	return "  " + m.theme.Border.Render(strings.Repeat(char, width-4)) + "  "
+}
+
+func sortShort(mode int) string {
+	switch mode {
+	case 1:
+		return "Name"
+	case 2:
+		return "Attention"
+	case 3:
+		return "Reset↑"
+	default:
+		return "Pinned"
+	}
+}
+
+func sortDescription(mode int) string {
+	switch mode {
+	case 1:
+		return "Name"
+	case 2:
+		return "Attention first"
+	case 3:
+		return "Soonest reset · earliest reported window"
+	default:
+		return "Pinned first · name"
+	}
 }
 
 func filterLabel(filter string) string {
@@ -358,6 +402,9 @@ func (m *model) card(index, width, height int) []string {
 		updated := "Updated " + age
 		if state == domain.StatusQueued || state == domain.StatusFetching {
 			updated = stateLabel(state)
+			if m.retainedPrior(snapshot) {
+				updated += " · prior"
+			}
 			if snapshot.SampleAt != nil {
 				updated += " · sample " + age
 			}
@@ -441,7 +488,7 @@ func (m *model) renderCompact(width, height int) []string {
 		if len(lines) < height {
 			lines = append(lines, line)
 		}
-		if (snapshot.Error != nil || state == domain.StatusStale) && hasMeasurements(snapshot) && len(lines) < height {
+		if m.retainedPrior(snapshot) && hasMeasurements(snapshot) && len(lines) < height {
 			lines = append(lines, "    "+m.theme.Low.Render(fmt.Sprintf("prior data · %s", ageLabel(snapshot, m.now()))))
 		}
 		if selected && len(snapshot.Windows) > 1 {

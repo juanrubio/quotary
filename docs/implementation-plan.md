@@ -792,6 +792,65 @@ unchecked box without explanation.
 | Normalized fixtures match the reference fields | `TestNormalizedFixtureParity`, `TestFixtureParityNamesTheDifferingField` |
 | Base fixture and scenario headline values reject mutations | `TestNormalizedFixtureParity`, `TestAttentionScenarioMatchesSharedReference` |
 
+### 7.6 Phase 4 verification
+
+| Phase 4 requirement | Verification |
+| --- | --- |
+| UX §5 key map, focused printable input, Ctrl+C | `TestQuitKeys`, `TestFocusedSearchAcceptsQ`, `TestSettingsThemeChooserWithKeys` |
+| Selection survives sort, resize, pagination; arrows use grid, j/k sequential, reverse tab | `TestSelectionIdentitySurvivesSortResizeAndPagination`, `TestGridNavigationAndReverseTab` |
+| Search/filter/sort, catalog search, tracking, pins, layout, settings through Store | `TestSearchAndFilterContext`, `TestPickerTrackingAndBulkAction`, `TestRuntimeTrackingAndPinningAreInMemory`, `TestThemeChooserSavesAndApplies` |
+| Picker separates availability/tracking/kind/last-read; paging covers every row at all sizes and clamps | `TestPickerAvailabilityVisibleAtBreakpoints`, `TestPickerTrackingAndBulkAction`, `TestPickerPageKeysDoNotMoveOverviewSelection`, `TestPickerFilteredPagingClampsAndActivates`, `TestPickerPagingCoversEveryEntryAt60`, `TestPickerPageKeysCoverEveryEntryAtAllSizes` |
+| Sheets restore originating screen, picker selection, tab, and scroll on cancel/save | `TestSheetsRestoreOriginScreenAndPosition`, `TestNestedSheetsRestoreFullOriginChain`, `TestNestedPickerSelectionPreserved`, `TestSettingsSaveReturnsToOrigin` |
+| Settings labels, interval, and path editors match handlers and save through Store | `TestSettingsVisibleMappingMatchesHandlers`, `TestSettingsIntervalAndPathEditors`, `TestSettingsSuccessClearsPreviousError` |
+| Settings masks/sanitizes paths and keeps editor cursor visible | `TestSettingsPrivacyMasksAndSanitizesPaths`, `TestSettingsEditingMasksOtherPath`, `TestSettingsPathEditorKeepsCursorVisible` |
+| Settings paging is scoped to the sheet | `TestSettingsPageKeysDoNotMoveOverview` |
+| Rejected path saves restore committed styling | `TestRejectedPathSaveRestoresCommittedTheme` |
+| Cancelled Settings clears sheet-scoped validation errors | `TestCancellingSettingsClearsValidationError` |
+| Settings saves preserve nested picker tracking changes | `TestSettingsSavePreservesNestedPickerTracking` |
+| Overlapping bulk/selected requests are queued/completed without dropping distinct sources | `TestSelectedRefreshDuringBulkIsNotStranded`, `TestBulkRequestDuringSelectedRefreshCompletesAllSources`, `TestThreeRapidPendingSourceRefreshesComplete` |
+| History refresh dispatches independently during usage refresh | `TestHistoryRefreshDispatchesDuringUsageRefresh` |
+| Scenario changes clear bulk/refresh state and outcomes | `TestScenarioSwitchClearsBulkRefreshState`, `TestScenarioSwitchClearsRefreshOutcomes` |
+| Search restart/empty submission restores full collection | `TestRestartingSearchRestoresFullCollection` |
+| Nested sheets preserve original picker selection | `TestNestedSheetsPreserveOriginalPickerSelection` |
+| Layout toggle uses effective automatic presentation | `TestLayoutToggleUsesEffectiveAutoLayout` |
+| Settings draft/focus suspends through child sheets and cancels on Esc | `TestSettingsDraftSuspendsThroughHelpAndCancels` |
+| Help paging clamps and covers every rendered shortcut | `TestHelpScrollClampsToViewport`, `TestHelpPagesCoverEveryRenderedShortcut` |
+| Cancelled Settings draft is never saved from parent origins | `TestCancelledSettingsDraftNotSavedAfterPickerOrigin`, `TestUnwindingSettingsViaPickerCancelsDraft` |
+| Interval saves recompute states/counts/filters both directions | `TestIntervalSaveRecomputesStatesCountsAndFilter` |
+| Settings recomputation preserves explicit normalized states | `TestSettingsRecomputePreservesExplicitNormalizedStates` |
+| Settings saves preserve active refresh stages | `TestSettingsSaveDuringRefreshPreservesSchedulingStates` |
+| Explicit auth-failure retention remains labelled through refresh | `TestExplicitAuthFailureRetainedDuringRefreshIsLabelled` |
+| Bulk tracking is discoverable in Help and picker footer | `TestBulkTrackingDiscoverableInHelpAndPicker` |
+| Explicit stale state keeps prior warning/age | `TestExplicitStaleStateKeepsPriorWarning` |
+| Picker search/backspace preserves selected canonical source identity | `TestPickerSearchPreservesSelectedSourceIdentity`, `TestPickerBackspacePreservesSourceIdentity` |
+| Selection changes reconcile history/error/scroll | `TestSelectionChangeReconcilesHistory`, `TestUntrackingSelectedSourceReconcilesHistory` |
+| Returning from sheets reconciles history and reuses valid cache | `TestReturningFromPickerReconcilesHistoryAfterUntrack`, `TestUnchangedSourceHistoryCacheSurvivesSheetRoundTrip` |
+| Nested picker preserves unsaved settings drafts | `TestNestedPickerPreservesUnsavedSettingsDraft` |
+| Space pins only on Overview | `TestSpaceOnlyPinsOnOverview` |
+| Bulk tracking reports failed and partial outcomes | `TestBulkTrackingReportsFailureAndPartialSuccess` |
+| Help restores its originating picker context | `TestHelpReturnsToPickerContext` |
+| Attention refresh preserves selected identity within search/filter scope | `TestAttentionRefreshKeepsSelectedIdentity`, `TestBulkRefreshKeepsAttentionSelection`, `TestRefreshSelectionPreservationRespectsSearch` |
+| Retained measurements keep prior-data cue while refreshing | `TestRefreshingRetainedCardShowsPriorInMonochrome`, `TestStaleRefreshDetailsKeepPriorAndAge`, `TestRetainedBalanceDuringFetchingShowsPriorEverywhere`, `TestReceiptTimeFallbackContributesToRetainedDetection` |
+| Picker refresh targets its focused source | `TestPickerRefreshUsesFocusedSource` |
+| Help paging is scoped and origin scroll is preserved | `TestHelpPagingDoesNotMoveUnderlyingSource` |
+| Details History tab scrolls the history pane | `TestDetailsHistoryTabScrollsHistory` |
+| Picker-help-picker round trip preserves selection | `TestPickerHelpRoundTripPreservesSelection` |
+| Uppercase E edits path fields | `TestUppercaseEEditsPaths` |
+| Settings navigation hints and Help are accurate | `TestSettingsHintsAndHelpExplainNavigation` |
+| Layout and theme mutations are transactional on save failure | `TestLayoutSaveFailureIsTransactional`, `TestSettingsCancelAndMonochromeSetting` |
+| Uppercase R queues all usage sources from History | `TestHistoryUppercaseRRefreshesAllSources` |
+| Focused search preserves printable spaces | `TestFocusedSearchPreservesPrintableSpaces` |
+| Failed refresh reports failure and visible transitions | `TestFailedRefreshReportsFailureAndTransitions` |
+| Space toggles picker tracking and overview pins | `TestSpaceTogglesPickerTrackingAndOverviewPin` |
+| Tab/Shift+Tab leave standalone History for Details | `TestHistoryTabMovesToDetailsScreen` |
+| Active sort and soonest-reset rule are explained | `TestSortExplanationVisible` |
+| State transitions render through the closed error taxonomy | `TestAttentionScenarioStates`, `TestRefreshCompletesOriginalSourceAfterNavigation`, `TestMalformedFailureRetainsPriorDataLabel`, `TestInvalidQuantitiesAreNotRenderedAsMeasurements` |
+| Scope operations to selected source and preserve return position | `TestHistoryBoundToSelectedSource`, `TestHistoryDisplayReusesSnapshotUntilRefresh`, `TestHistoryBoundaryNavigationKeepsCachedSnapshot` |
+| Golden text grids with forced TrueColor at all five sizes | `TestGoldenMatrix` with `internal/tui/testdata/golden/` |
+| Four themes at 120×40 light/dark; Green at every size; monochrome at every size | `TestGoldenMatrix`, `TestFourThemesLightDarkAndMonochrome` |
+| Theme × size smoke matrix for dimensions/overflow | `TestThemeSizeSmokeMatrix`, `TestAllScreensRenderAtRequiredSizes`, `TestOverviewAtRequiredSizes`, `TestGoldenMatrix` |
+| No color-only information; structural selection cue | `TestForcedColorPreservesStylingAndSelection`, `TestCanvasBackgroundIsPainted` |
+
 ## 8. Suggested commit/PR sequence
 
 1. `chore: initialize Go module, Makefile, docs-check, CI, lint, and contributor docs`

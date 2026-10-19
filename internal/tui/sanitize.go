@@ -33,7 +33,9 @@ func sanitizeSnapshot(snapshot domain.UsageSnapshot) domain.UsageSnapshot {
 			snapshot.Details[i].Points[j].Label = cleanText(snapshot.Details[i].Points[j].Label)
 		}
 	}
-	snapshot.State = domain.EffectiveState(snapshot)
+	if snapshot.State != domain.StatusQueued && snapshot.State != domain.StatusFetching {
+		snapshot.State = domain.EffectiveState(snapshot)
+	}
 	return snapshot
 }
 

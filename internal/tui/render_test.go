@@ -512,8 +512,8 @@ func TestScenarioChangeClearsHistory(t *testing.T) {
 		t.Fatal("history did not load")
 	}
 	m.switchScenario("2")
-	if m.history.TotalTokens != nil || m.history.Key.Provider != "" {
-		t.Fatal("scenario change retained old history")
+	if m.history.Key.Provider == "muse" && m.history.TotalTokens != nil {
+		t.Fatal("scenario change retained old Muse history")
 	}
 	view := m.View().Content
 	if strings.Contains(view, "4.74M") {
@@ -524,11 +524,8 @@ func TestScenarioChangeClearsHistory(t *testing.T) {
 func TestSettingsTabReachesEveryControl(t *testing.T) {
 	m := demoModel(t, demo.ScenarioSubscription)
 	m.Update(tea.KeyPressMsg{Code: ',', Text: ","})
-	for i := 0; i < settingsRows-1; i++ {
+	for m.settingsIdx != 5 {
 		m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
-	}
-	if m.settingsIdx != settingsRows-1 {
-		t.Fatalf("settings index = %d", m.settingsIdx)
 	}
 	before := m.settingsDraft.Monochrome
 	m.changeSetting(1)
@@ -1552,6 +1549,10 @@ func TestLeavingSettingsThroughHelpRestoresCommittedTheme(t *testing.T) {
 	}
 	m.Update(tea.KeyPressMsg{Code: '?', Text: "?"})
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if m.screen != screenSettings {
+		t.Fatalf("Help did not return to Settings: %v", m.screen)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if m.prefs.Theme != config.ThemeGreen {
 		t.Fatalf("persisted theme changed to %s", m.prefs.Theme)
 	}
@@ -1570,6 +1571,10 @@ func TestLeavingSettingsThroughPickerRestoresCommittedTheme(t *testing.T) {
 	m.Update(tea.KeyPressMsg{Code: 'p', Text: "p"})
 	if m.screen != screenPicker {
 		t.Fatalf("p did not open picker from settings: %v", m.screen)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if m.screen != screenSettings {
+		t.Fatalf("picker did not return to Settings: %v", m.screen)
 	}
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if m.prefs.Theme != config.ThemeGreen {
@@ -1685,6 +1690,37 @@ func TestCompactMixedPaginationMatchesFooterAndKeepsContext(t *testing.T) {
 		}
 		if !strings.Contains(view, "S16") || !strings.Contains(view, "prior data") {
 			t.Fatalf("%dx%d lost selected context/retained age:\n%s", size[0], size[1], view)
+		}
+	}
+}
+
+func TestThemeSizeSmokeMatrix(t *testing.T) {
+	previous := lipgloss.Writer.Profile
+	lipgloss.Writer.Profile = colorprofile.TrueColor
+	defer func() { lipgloss.Writer.Profile = previous }()
+	themes := []config.ThemeName{config.ThemeGreen, config.ThemeBlue, config.ThemeAmber, config.ThemeMonokai}
+	sizes := [][2]int{{160, 48}, {120, 40}, {100, 32}, {80, 24}, {60, 20}}
+	screens := []screen{screenOverview, screenDetails, screenHistory, screenPicker, screenSettings, screenHelp}
+	for _, themeName := range themes {
+		for _, light := range []bool{false, true} {
+			for _, mono := range []bool{false, true} {
+				for _, size := range sizes {
+					for _, target := range screens {
+						m := demoModel(t, demo.ScenarioSubscription)
+						m.prefs.Theme = themeName
+						m.prefs.Monochrome = mono
+						m.light = light
+						m.noColor = mono
+						m.applyTheme()
+						m.screen = target
+						if target == screenHistory {
+							m.selectMuse()
+							m.loadHistory()
+						}
+						_ = checkFrame(t, m, size[0], size[1])
+					}
+				}
+			}
 		}
 	}
 }

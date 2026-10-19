@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -68,22 +69,26 @@ type model struct {
 	all     []domain.UsageSnapshot
 	visible []domain.UsageSnapshot
 
-	selected      int
-	selectedKey   string
-	screen        screen
-	detailTab     int
-	historyDays   int
-	pickerIndex   int
-	pickerQuery   string
-	query         string
-	searching     bool
-	filter        string
-	sortMode      int
-	settingsIdx   int
-	settingsDraft config.Preferences
-	helpScroll    int
-	detailScroll  int
-	historyScroll int
+	selected        int
+	selectedKey     string
+	screen          screen
+	detailTab       int
+	historyDays     int
+	pickerIndex     int
+	pickerQuery     string
+	query           string
+	searching       bool
+	filter          string
+	sortMode        int
+	settingsIdx     int
+	settingsDraft   config.Preferences
+	settingsEditing bool
+	settingsInput   string
+	settingsDirty   bool
+	returnStack     []screen
+	helpScroll      int
+	detailScroll    int
+	historyScroll   int
 
 	prefs    config.Preferences
 	theme    theme.Styles
@@ -94,16 +99,19 @@ type model struct {
 	catalog    backend.CatalogSnapshot
 	history    domain.HistorySnapshot
 	historyErr string
+	baseStates map[string]domain.SourceStatus
 	status     string
 	errorText  string
 
-	refreshing     bool
-	refreshKey     string
-	refreshGen     uint64
-	refreshAll     bool
-	refreshAllIdx  int
-	refreshAllKeys []string
-	scenarioGen    uint64
+	refreshing         bool
+	refreshKey         string
+	refreshGen         uint64
+	refreshAll         bool
+	refreshAllIdx      int
+	refreshAllKeys     []string
+	pendingRefreshAll  bool
+	pendingRefreshKeys []string
+	scenarioGen        uint64
 }
 
 // Run starts the interactive application.
@@ -115,7 +123,7 @@ func Run(ctx context.Context, opts Options) error {
 }
 
 func newModel(opts Options) *model {
-	m := &model{demo: opts.Demo, session: opts.Session, filter: "all", location: time.Local}
+	m := &model{demo: opts.Demo, session: opts.Session, filter: "all", location: time.Local, baseStates: map[string]domain.SourceStatus{}}
 	m.noColor = os.Getenv("NO_COLOR") != "" || os.Getenv("TERM") == "dumb"
 	if m.session != nil {
 		m.prefs = m.session.Preferences()
@@ -136,7 +144,17 @@ func (m *model) load() {
 	if m.session == nil {
 		return
 	}
-	m.all = m.session.AllSnapshots(context.Background())
+	raw := m.session.AllSnapshots(context.Background())
+	if m.baseStates == nil {
+		m.baseStates = map[string]domain.SourceStatus{}
+	}
+	for _, snapshot := range raw {
+		if _, exists := m.baseStates[snapshot.Key.String()]; !exists ||
+			(snapshot.State != domain.StatusQueued && snapshot.State != domain.StatusFetching) {
+			m.baseStates[snapshot.Key.String()] = snapshot.State
+		}
+	}
+	m.all = raw
 	for index := range m.all {
 		m.all[index] = sanitizeSnapshot(m.all[index])
 		m.all[index].State = m.effectiveState(m.all[index])
@@ -200,27 +218,72 @@ func (m *model) filterVisible() {
 	default:
 		domain.SortSnapshots(filtered, pins)
 	}
+	if m.selectedKey != "" && m.refreshing {
+		found := false
+		for _, snapshot := range filtered {
+			if snapshot.Key.String() == m.selectedKey {
+				found = true
+				break
+			}
+		}
+		if !found {
+			for _, snapshot := range m.all {
+				if snapshot.Key.String() != m.selectedKey ||
+					(snapshot.State != domain.StatusQueued && snapshot.State != domain.StatusFetching) {
+					continue
+				}
+				pinned := false
+				if _, ok := pins[snapshot.Key.String()]; ok {
+					pinned = true
+				}
+				filterForSelection := m.filter
+				if filterForSelection == "attention" {
+					filterForSelection = "all"
+				}
+				if domain.Filter(snapshot, filterForSelection, m.query, pinned) {
+					filtered = append(filtered, snapshot)
+				}
+				break
+			}
+		}
+	}
+	previousKey := m.selectedKey
 	m.visible = filtered
 	if len(filtered) == 0 {
 		m.selected = 0
 		m.selectedKey = ""
+		m.history = domain.HistorySnapshot{}
+		m.historyErr = ""
+		m.historyScroll = 0
 		return
 	}
+	found := false
 	if m.selectedKey != "" {
 		for index, snapshot := range filtered {
 			if snapshot.Key.String() == m.selectedKey {
 				m.selected = index
-				return
+				found = true
+				break
 			}
 		}
 	}
-	if m.selected >= len(filtered) {
-		m.selected = len(filtered) - 1
+	if !found {
+		if m.selected >= len(filtered) {
+			m.selected = len(filtered) - 1
+		}
+		if m.selected < 0 {
+			m.selected = 0
+		}
+		m.selectedKey = filtered[m.selected].Key.String()
 	}
-	if m.selected < 0 {
-		m.selected = 0
+	if previousKey != m.selectedKey {
+		m.history = domain.HistorySnapshot{}
+		m.historyErr = ""
+		m.historyScroll = 0
+		if m.historyVisible() {
+			m.loadHistoryIfNeeded()
+		}
 	}
-	m.selectedKey = filtered[m.selected].Key.String()
 }
 
 func (m *model) selectedSnapshot() (domain.UsageSnapshot, bool) {
@@ -275,11 +338,7 @@ func (m *model) onRefreshTick(msg refreshTickMsg) (tea.Model, tea.Cmd) {
 	}
 	if m.refreshAll {
 		if m.refreshAllIdx >= len(m.refreshAllKeys) {
-			m.refreshAll = false
-			m.refreshing = false
-			m.status = ""
-			m.load()
-			return m, nil
+			return m.finishRefresh()
 		}
 		key := m.refreshAllKeys[m.refreshAllIdx]
 		if !m.session.AdvanceRefresh(key) {
@@ -296,10 +355,7 @@ func (m *model) onRefreshTick(msg refreshTickMsg) (tea.Model, tea.Cmd) {
 	done := m.session.AdvanceRefresh(msg.key)
 	m.load()
 	if !done {
-		m.refreshing = false
-		m.refreshKey = ""
-		m.status = ""
-		return m, nil
+		return m.finishRefresh()
 	}
 	m.status = "Fetching…"
 	return m, tea.Tick(80*time.Millisecond, func(time.Time) tea.Msg {
@@ -310,14 +366,20 @@ func (m *model) onRefreshTick(msg refreshTickMsg) (tea.Model, tea.Cmd) {
 func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	wasSettings := m.screen == screenSettings
 	defer func() {
-		if wasSettings && m.screen != screenSettings {
+		suspended := (m.screen == screenPicker || m.screen == screenHelp) &&
+			len(m.returnStack) > 0 && m.returnStack[len(m.returnStack)-1] == screenSettings
+		if wasSettings && m.screen != screenSettings && !suspended {
 			m.applyTheme()
 			m.settingsDraft = m.prefs
+			m.settingsDirty = false
 		}
 	}()
 	key := msg.String()
 	if key == "ctrl+c" {
 		return m, tea.Quit
+	}
+	if m.settingsEditing {
+		return m.onSettingsEdit(msg)
 	}
 	if m.searching {
 		return m.onSearchKey(msg)
@@ -328,6 +390,12 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch key {
 	case "j", "down":
 		switch m.screen {
+		case screenOverview:
+			if key == "j" {
+				m.move(1)
+			} else {
+				m.move(m.overviewStep())
+			}
 		case screenPicker:
 			m.movePicker(1)
 		case screenSettings:
@@ -337,9 +405,13 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 				m.moveSettings(1)
 			}
 		case screenHelp:
-			m.helpScroll++
+			m.helpScroll = min(m.helpScroll+1, m.helpMaxScroll())
 		case screenDetails:
-			m.detailScroll++
+			if m.detailTab == 1 {
+				m.historyScroll++
+			} else {
+				m.detailScroll++
+			}
 		case screenHistory:
 			m.move(1)
 			m.loadHistoryIfNeeded()
@@ -348,6 +420,12 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 	case "k", "up":
 		switch m.screen {
+		case screenOverview:
+			if key == "k" {
+				m.move(-1)
+			} else {
+				m.move(-m.overviewStep())
+			}
 		case screenPicker:
 			m.movePicker(-1)
 		case screenSettings:
@@ -361,7 +439,11 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 				m.helpScroll--
 			}
 		case screenDetails:
-			if m.detailScroll > 0 {
+			if m.detailTab == 1 {
+				if m.historyScroll > 0 {
+					m.historyScroll--
+				}
+			} else if m.detailScroll > 0 {
 				m.detailScroll--
 			}
 		case screenHistory:
@@ -392,32 +474,46 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.onEnter()
 	case "esc":
 		if m.screen == screenSettings {
+			m.settingsDraft = m.prefs
+			m.settingsDirty = false
+			m.errorText = ""
 			m.applyTheme()
 		}
-		if m.screen != screenOverview {
+		if m.screen == screenPicker || m.screen == screenSettings || m.screen == screenHelp {
+			m.closeSheet()
+			m.status = ""
+		} else if m.screen != screenOverview {
 			m.screen = screenOverview
 			m.status = ""
 		} else if m.query != "" {
 			m.query = ""
 			m.filterVisible()
 		}
-	case "tab":
+	case "tab", "shift+tab":
+		delta := 1
+		if key == "shift+tab" {
+			delta = -1
+		}
 		switch m.screen {
-		case screenDetails, screenHistory:
-			m.detailTab = (m.detailTab + 1) % 2
+		case screenHistory:
+			m.screen = screenDetails
+			m.detailTab = 0
+		case screenDetails:
+			m.detailTab = (m.detailTab + delta + 2) % 2
 			m.detailScroll = 0
 			if m.detailTab == 1 {
 				m.loadHistoryIfNeeded()
 			}
 		case screenSettings:
-			m.moveSettings(1)
+			m.moveSettings(delta)
 		}
 	case "/":
 		m.searching = true
 		if m.screen == screenPicker {
-			m.pickerQuery = ""
+			m.setPickerQuery("")
 		} else {
 			m.query = ""
+			m.filterVisible()
 		}
 	case "f":
 		switch m.filter {
@@ -434,25 +530,32 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.filterVisible()
 	case "p":
 		if m.screen == screenPicker {
-			m.screen = screenOverview
+			m.closeSheet()
+		} else if m.returnToPicker() {
 		} else {
-			m.screen = screenPicker
+			m.openSheet(screenPicker)
 			m.pickerIndex = 0
 		}
-	case " ":
+	case " ", "space":
 		return m.onSpace()
 	case "a":
 		if m.screen == screenPicker {
 			m.trackAllSubscriptions()
 		}
+	case "e", "E":
+		if m.screen == screenSettings && m.settingsIdx >= 6 {
+			m.beginSettingsEdit()
+		}
 	case "r", "R":
 		return m.onRefresh(key == "R")
 	case "?":
-		m.screen = screenHelp
+		m.openSheet(screenHelp)
 	case ",":
-		m.screen = screenSettings
-		m.settingsIdx = 0
-		m.settingsDraft = m.prefs
+		if !m.settingsDirty {
+			m.settingsIdx = 0
+			m.settingsDraft = m.prefs
+		}
+		m.openSheet(screenSettings)
 	case "d":
 		m.switchScenario("1")
 	case "1", "2", "3", "4", "5", "6":
@@ -469,6 +572,13 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 	case "pgdown":
 		switch {
+		case m.screen == screenPicker:
+			start, end := m.pickerViewport(max(1, m.height-6))
+			m.movePicker(max(1, end-start))
+		case m.screen == screenSettings:
+			m.moveSettings(1)
+		case m.screen == screenHelp:
+			m.helpScroll = min(m.helpScroll+max(1, m.height-8), m.helpMaxScroll())
 		case m.historyVisible():
 			m.historyScroll += m.pageSize()
 		case m.screen == screenDetails:
@@ -478,6 +588,13 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 	case "pgup":
 		switch {
+		case m.screen == screenPicker:
+			start, end := m.pickerViewport(max(1, m.height-6))
+			m.movePicker(-max(1, end-start))
+		case m.screen == screenSettings:
+			m.moveSettings(-1)
+		case m.screen == screenHelp:
+			m.helpScroll = max(0, m.helpScroll-max(1, m.height-8))
 		case m.historyVisible():
 			m.historyScroll = max(0, m.historyScroll-m.pageSize())
 		case m.screen == screenDetails:
@@ -494,18 +611,21 @@ func (m *model) onSearchKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "esc":
 		m.searching = false
 		if m.screen == screenPicker {
-			m.pickerQuery = ""
+			m.setPickerQuery("")
 		} else {
 			m.query = ""
 			m.filterVisible()
 		}
 	case "enter":
 		m.searching = false
+		if m.screen != screenPicker {
+			m.filterVisible()
+		}
 	case "backspace":
 		if m.screen == screenPicker {
 			if m.pickerQuery != "" {
 				r := []rune(m.pickerQuery)
-				m.pickerQuery = string(r[:len(r)-1])
+				m.setPickerQuery(string(r[:len(r)-1]))
 			}
 		} else if m.query != "" {
 			r := []rune(m.query)
@@ -513,11 +633,10 @@ func (m *model) onSearchKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.filterVisible()
 		}
 	default:
-		text := cleanText(msg.Text)
+		text := cleanInput(msg.Text)
 		if text != "" {
 			if m.screen == screenPicker {
-				m.pickerQuery += text
-				m.pickerIndex = 0
+				m.setPickerQuery(m.pickerQuery + text)
 			} else {
 				m.query += text
 				m.filterVisible()
@@ -538,7 +657,11 @@ func (m *model) onEnter() (tea.Model, tea.Cmd) {
 		m.togglePickerTracking()
 		return m, nil
 	case screenSettings:
-		m.saveSettings()
+		if m.settingsIdx >= 6 {
+			m.beginSettingsEdit()
+		} else {
+			m.saveSettings()
+		}
 	case screenDetails:
 		if m.detailTab == 0 {
 			m.screen = screenHistory
@@ -558,6 +681,9 @@ func (m *model) onSpace() (tea.Model, tea.Cmd) {
 		m.togglePickerTracking()
 		return m, nil
 	}
+	if m.screen != screenOverview {
+		return m, nil
+	}
 	snapshot, ok := m.selectedSnapshot()
 	if !ok {
 		return m, nil
@@ -573,40 +699,25 @@ func (m *model) onSpace() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *model) onRefresh(all bool) (tea.Model, tea.Cmd) {
-	if m.session == nil {
-		return m, nil
+func (m *model) startRefreshAll() (tea.Model, tea.Cmd) {
+	m.refreshGen++
+	m.refreshing = true
+	m.refreshAll = true
+	m.refreshAllIdx = 0
+	m.refreshAllKeys = nil
+	for _, snapshot := range m.all {
+		m.refreshAllKeys = append(m.refreshAllKeys, snapshot.Key.String())
+		m.session.StartRefresh(snapshot.Key.String())
 	}
-	if m.historyVisible() {
-		m.loadHistory()
-		return m, nil
-	}
-	if m.refreshing && !m.refreshAll {
-		m.status = "Refresh already in progress"
-		return m, nil
-	}
-	if all {
-		m.refreshGen++
-		m.refreshing = true
-		m.refreshAll = true
-		m.refreshAllIdx = 0
-		m.refreshAllKeys = nil
-		for _, snapshot := range m.all {
-			m.refreshAllKeys = append(m.refreshAllKeys, snapshot.Key.String())
-			m.session.StartRefresh(snapshot.Key.String())
-		}
-		m.status = "Queued all tracked sources"
-		m.load()
-		generation := m.refreshGen
-		return m, tea.Tick(80*time.Millisecond, func(time.Time) tea.Msg {
-			return refreshTickMsg{generation: generation}
-		})
-	}
-	snapshot, ok := m.selectedSnapshot()
-	if !ok {
-		return m, nil
-	}
-	key := snapshot.Key.String()
+	m.status = "Queued all tracked sources"
+	m.load()
+	generation := m.refreshGen
+	return m, tea.Tick(80*time.Millisecond, func(time.Time) tea.Msg {
+		return refreshTickMsg{generation: generation}
+	})
+}
+
+func (m *model) startRefreshKey(key string) (tea.Model, tea.Cmd) {
 	m.refreshGen++
 	m.refreshKey = key
 	m.refreshing = true
@@ -619,15 +730,84 @@ func (m *model) onRefresh(all bool) (tea.Model, tea.Cmd) {
 	})
 }
 
+func (m *model) finishRefresh() (tea.Model, tea.Cmd) {
+	m.refreshing = false
+	m.refreshAll = false
+	m.refreshAllIdx = 0
+	m.refreshAllKeys = nil
+	m.refreshKey = ""
+	m.status = ""
+	if m.pendingRefreshAll {
+		m.pendingRefreshAll = false
+		m.pendingRefreshKeys = nil
+		return m.startRefreshAll()
+	}
+	if len(m.pendingRefreshKeys) > 0 {
+		key := m.pendingRefreshKeys[0]
+		m.pendingRefreshKeys = m.pendingRefreshKeys[1:]
+		return m.startRefreshKey(key)
+	}
+	m.load()
+	return m, nil
+}
+
+func (m *model) onRefresh(all bool) (tea.Model, tea.Cmd) {
+	if m.session == nil {
+		return m, nil
+	}
+	if !all && m.historyVisible() {
+		m.loadHistory()
+		return m, nil
+	}
+	var key string
+	if !all {
+		if m.screen == screenPicker {
+			entries := m.pickerEntries()
+			if m.pickerIndex < 0 || m.pickerIndex >= len(entries) {
+				return m, nil
+			}
+			key = entries[m.pickerIndex].Key.String()
+		} else {
+			snapshot, ok := m.selectedSnapshot()
+			if !ok {
+				return m, nil
+			}
+			key = snapshot.Key.String()
+		}
+	}
+	if m.refreshing {
+		if all {
+			m.pendingRefreshAll = true
+		} else if key != m.refreshKey && !contains(m.pendingRefreshKeys, key) {
+			m.pendingRefreshKeys = append(m.pendingRefreshKeys, key)
+		}
+		m.status = "Refresh queued"
+		return m, nil
+	}
+	if all {
+		return m.startRefreshAll()
+	}
+	return m.startRefreshKey(key)
+}
+
 func (m *model) toggleLayout() {
-	if m.prefs.Layout == config.LayoutCompact {
-		m.prefs.Layout = config.LayoutCards
+	next := m.prefs
+	effectiveCompact := next.Layout == config.LayoutCompact ||
+		(next.Layout != config.LayoutCards && (m.width < 88 || m.height < 32))
+	if effectiveCompact && m.width >= 88 {
+		next.Layout = config.LayoutCards
 	} else {
-		m.prefs.Layout = config.LayoutCompact
+		next.Layout = config.LayoutCompact
 	}
 	if m.session != nil {
-		_ = m.session.SavePreferences(m.prefs)
+		if err := m.session.SavePreferences(next); err != nil {
+			m.errorText = safeError(err)
+			m.status = ""
+			return
+		}
 	}
+	m.prefs = next
+	m.errorText = ""
 }
 
 func (m *model) switchScenario(key string) {
@@ -643,13 +823,20 @@ func (m *model) switchScenario(key string) {
 		return
 	}
 	m.scenarioGen++
+	m.refreshGen++
 	m.refreshing = false
+	m.refreshAll = false
+	m.refreshAllIdx = 0
+	m.refreshAllKeys = nil
 	m.refreshKey = ""
+	m.pendingRefreshAll = false
+	m.pendingRefreshKeys = nil
 	m.selected = 0
 	m.selectedKey = ""
 	m.history = domain.HistorySnapshot{}
 	m.historyErr = ""
 	m.detailScroll = 0
+	m.baseStates = map[string]domain.SourceStatus{}
 	m.query = m.session.Query()
 	m.status = "Scenario: " + scenario
 	m.prefs = m.session.Preferences()
@@ -696,6 +883,124 @@ func (m *model) loadHistory() {
 	m.historyScroll = 0
 }
 
+func (m *model) helpPageSize() int { return max(1, m.height-6-5) }
+
+func (m *model) helpMaxScroll() int { return max(0, len(helpRows)-m.helpPageSize()) }
+
+func (m *model) overviewStep() int {
+	if m.prefs.Layout == config.LayoutCards || (m.prefs.Layout != config.LayoutCompact && m.width >= 88 && m.height >= 32) {
+		return max(1, m.cardColumns(m.width))
+	}
+	return 1
+}
+
+func (m *model) pickerViewport(height int) (int, int) {
+	entries := m.pickerEntries()
+	if len(entries) == 0 {
+		return 0, 0
+	}
+	budget := max(1, height-13)
+	start := 0
+	for start < len(entries) {
+		end, rows := start, 0
+		for end < len(entries) {
+			cost := 1
+			if m.width < 110 {
+				cost++
+			}
+			if rows+cost > budget && end > start {
+				break
+			}
+			rows += cost
+			end++
+		}
+		if end == start {
+			end++
+		}
+		if m.pickerIndex >= start && m.pickerIndex < end {
+			return start, end
+		}
+		start = end
+	}
+	return start, len(entries)
+}
+
+func (m *model) returnToPicker() bool {
+	for index := len(m.returnStack) - 1; index >= 0; index-- {
+		if m.returnStack[index] == screenPicker {
+			cancelledSettings := false
+			for _, frame := range m.returnStack[index+1:] {
+				if frame == screenSettings {
+					cancelledSettings = true
+				}
+			}
+			m.returnStack = m.returnStack[:index]
+			m.screen = screenPicker
+			if cancelledSettings {
+				m.applyTheme()
+				m.settingsDraft = m.prefs
+				m.settingsDirty = false
+			}
+			return true
+		}
+	}
+	return false
+}
+
+func (m *model) openSheet(next screen) {
+	if m.screen != next {
+		m.returnStack = append(m.returnStack, m.screen)
+	}
+	m.screen = next
+}
+
+func (m *model) closeSheet() {
+	if len(m.returnStack) == 0 {
+		m.screen = screenOverview
+		return
+	}
+	m.screen = m.returnStack[len(m.returnStack)-1]
+	m.returnStack = m.returnStack[:len(m.returnStack)-1]
+	if m.historyVisible() {
+		m.loadHistoryIfNeeded()
+	}
+}
+
+func (m *model) beginSettingsEdit() {
+	if m.settingsIdx == 6 {
+		m.settingsInput = m.settingsDraft.BackendPath
+	} else {
+		m.settingsInput = m.settingsDraft.BackendConfigPath
+	}
+	m.settingsEditing = true
+}
+
+func (m *model) onSettingsEdit(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "esc":
+		m.settingsEditing = false
+	case "enter":
+		if m.settingsIdx == 6 {
+			m.settingsDraft.BackendPath = m.settingsInput
+		} else {
+			m.settingsDraft.BackendConfigPath = m.settingsInput
+		}
+		m.settingsEditing = false
+		m.settingsDirty = true
+		m.saveSettings()
+	case "backspace":
+		runes := []rune(m.settingsInput)
+		if len(runes) > 0 {
+			m.settingsInput = string(runes[:len(runes)-1])
+		}
+	default:
+		if msg.Text != "" && len(m.settingsInput) < 1024 {
+			m.settingsInput += msg.Text
+		}
+	}
+	return m, nil
+}
+
 func (m *model) moveSettings(delta int) {
 	m.settingsIdx = (m.settingsIdx + delta + settingsRows) % settingsRows
 }
@@ -703,9 +1008,34 @@ func (m *model) moveSettings(delta int) {
 func (m *model) movePicker(delta int) {
 	entries := m.pickerEntries()
 	if len(entries) == 0 {
+		m.pickerIndex = 0
 		return
 	}
-	m.pickerIndex = (m.pickerIndex + delta + len(entries)) % len(entries)
+	next := m.pickerIndex + delta
+	if next < 0 {
+		next = 0
+	}
+	if next >= len(entries) {
+		next = len(entries) - 1
+	}
+	m.pickerIndex = next
+}
+
+func (m *model) setPickerQuery(query string) {
+	selectedKey := ""
+	entries := m.pickerEntries()
+	if m.pickerIndex >= 0 && m.pickerIndex < len(entries) {
+		selectedKey = entries[m.pickerIndex].Key.String()
+	}
+	m.pickerQuery = query
+	entries = m.pickerEntries()
+	for index, descriptor := range entries {
+		if descriptor.Key.String() == selectedKey {
+			m.pickerIndex = index
+			return
+		}
+	}
+	m.pickerIndex = 0
 }
 
 func (m *model) pickerEntries() []domain.SourceDescriptor {
@@ -731,6 +1061,9 @@ func (m *model) togglePickerTracking() {
 	if len(entries) == 0 {
 		return
 	}
+	if m.pickerIndex < 0 || m.pickerIndex >= len(entries) {
+		return
+	}
 	descriptor := entries[m.pickerIndex]
 	if err := m.session.Track(descriptor.Key.String(), !descriptor.Tracked); err != nil {
 		m.errorText = safeError(err)
@@ -744,7 +1077,7 @@ func (m *model) trackAllSubscriptions() {
 	if m.session == nil {
 		return
 	}
-	count := 0
+	count, failed := 0, 0
 	for _, descriptor := range m.catalog.Providers {
 		if descriptor.Kind != domain.KindSubscription && descriptor.Kind != domain.KindMixed {
 			continue
@@ -753,14 +1086,25 @@ func (m *model) trackAllSubscriptions() {
 			continue
 		}
 		if !descriptor.Tracked {
-			if err := m.session.Track(descriptor.Key.String(), true); err == nil {
+			if err := m.session.Track(descriptor.Key.String(), true); err != nil {
+				failed++
+			} else {
 				count++
 			}
 		}
 	}
 	m.prefs = m.session.Preferences()
 	m.load()
-	m.status = fmt.Sprintf("Tracked %d subscriptions", count)
+	switch {
+	case failed > 0 && count > 0:
+		m.errorText = fmt.Sprintf("Tracked %d subscriptions; %d could not be saved", count, failed)
+		m.status = ""
+	case failed > 0:
+		m.errorText = fmt.Sprintf("Tracking failed for %d subscriptions", failed)
+		m.status = ""
+	default:
+		m.status = fmt.Sprintf("Tracked %d subscriptions", count)
+	}
 }
 
 func (m *model) historyVisible() bool {
@@ -808,7 +1152,8 @@ func (m *model) compactViewport(height int) (int, int) {
 			cost := 1
 			snapshot := m.visible[end]
 			state := m.effectiveState(snapshot)
-			if (snapshot.Error != nil || state == domain.StatusStale) && hasMeasurements(snapshot) {
+			_ = state
+			if m.retainedPrior(snapshot) && hasMeasurements(snapshot) {
 				cost++
 			}
 			if end == m.selected && len(snapshot.Windows) > 1 {
@@ -889,7 +1234,7 @@ func (m *model) View() tea.View {
 	return view
 }
 
-const settingsRows = 5
+const settingsRows = 8
 
 func (m *model) changeSetting(delta int) {
 	draft := m.settingsDraft
@@ -928,11 +1273,17 @@ func (m *model) changeSetting(delta int) {
 		index = (index + delta + len(layouts)) % len(layouts)
 		draft.Layout = layouts[index]
 	case 3:
-		draft.Privacy = !draft.Privacy
+		draft.IntervalSeconds += delta * 60
+		if draft.IntervalSeconds < 60 {
+			draft.IntervalSeconds = 60
+		}
 	case 4:
+		draft.Privacy = !draft.Privacy
+	case 5:
 		draft.Monochrome = !draft.Monochrome
 	}
 	m.settingsDraft = draft
+	m.settingsDirty = true
 	m.applyThemePreview(draft)
 }
 
@@ -947,7 +1298,39 @@ func (m *model) applyThemePreview(prefs config.Preferences) {
 	m.theme = theme.New(string(prefs.Theme), light, m.noColor || prefs.Monochrome)
 }
 
+func (m *model) recomputePresentationStates() {
+	for index := range m.all {
+		if m.all[index].State == domain.StatusQueued || m.all[index].State == domain.StatusFetching {
+			continue
+		}
+		base := domain.StatusCurrent
+		if value, ok := m.baseStates[m.all[index].Key.String()]; ok {
+			base = value
+		}
+		m.all[index].State = base
+		m.all[index].State = m.effectiveState(m.all[index])
+	}
+	m.filterVisible()
+}
+
 func (m *model) saveSettings() {
+	draft := config.Normalize(m.settingsDraft)
+	if draft.BackendPath != "" && !filepath.IsAbs(draft.BackendPath) {
+		m.errorText = "Backend path must be absolute"
+		m.applyTheme()
+		return
+	}
+	if draft.BackendConfigPath != "" && !filepath.IsAbs(draft.BackendConfigPath) {
+		m.errorText = "Backend config path must be absolute"
+		m.applyTheme()
+		return
+	}
+	if m.session != nil {
+		current := m.session.Preferences()
+		draft.Tracked = current.Tracked
+		draft.Pins = current.Pins
+	}
+	m.settingsDraft = draft
 	if m.session != nil {
 		if err := m.session.SavePreferences(m.settingsDraft); err != nil {
 			m.errorText = safeError(err)
@@ -956,8 +1339,10 @@ func (m *model) saveSettings() {
 		}
 	}
 	m.prefs = m.settingsDraft
+	m.settingsDirty = false
 	m.errorText = ""
+	m.recomputePresentationStates()
 	m.applyTheme()
 	m.status = "Settings saved"
-	m.screen = screenOverview
+	m.closeSheet()
 }
