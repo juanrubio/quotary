@@ -128,7 +128,7 @@ Never wrap the whole application into accidental horizontal scrolling.
 ```
 
 Compact mode shows one primary line per source and expands the selected source
-to reveal another key allowance. Do not make a 106-source collection 318 rows
+to reveal another key allowance. Do not make a 106-provider collection 318 rows
 long by expanding every source. Include a position/count indicator when scrolling.
 
 ## 3. Visual system
@@ -155,6 +155,27 @@ These are design tokens, to be visually checked in the target terminals. Respect
 `NO_COLOR`, support a monochrome mode, and downsample color profiles. All states
 need readable text; color is supplementary. Monochrome selection uses `>` and a
 strong border or reverse video, not color alone.
+
+### Named themes
+
+Quotary ships four named palettes: **Green** (default), **Blue**, **Amber**, and
+**Monokai**. Green uses the token table above as its anchor. Blue, Amber, and
+Monokai adopt the corresponding Trailmark structural palettes and must define
+the same semantic state tokens: Canvas, Surface, Border, BorderFocus, Text,
+Muted, Accent, Available, Low, Exhausted/Error, and Stale. Provider state never
+depends on a palette's decorative accent colour.
+
+Each theme has light and dark variants chosen from the terminal background report,
+with dark as the fallback. Every text, muted, accent, and state token must meet
+WCAG AA (4.5:1) against its Canvas and Surface in both variants. An absent or
+unknown persisted theme name normalizes to Green. Monochrome remains an orthogonal
+rendering mode, not a fifth palette.
+
+Settings → Theme lists the four names, marks the current choice, and saves with
+`Enter`; a failed save leaves the active theme unchanged and shows a concise
+error. Changing theme never triggers a backend refresh or rescan. The decision and
+Trailmark attribution are recorded in
+[the theme ADR](docs/decisions/0004-theme-palettes.md).
 
 Use rounded outer card corners where supported. One accent color marks focus.
 Avoid every provider getting a competing brand-colored panel. Numeric columns

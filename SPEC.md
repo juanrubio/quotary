@@ -170,6 +170,10 @@ that choice. When importing an enabled provider with several variants, retain
 configured mode until the user selects explicit variants. Selecting both Google
 variants replaces that provider's generic entry with the two distinct entries.
 Cache and selection keys include this source key and any established account key.
+The canonical form is `<provider>[:<variant>][@<account>]`, where the account key
+comes from the backend (percent-encoded when it contains reserved characters) or
+the literal `@unknown` sentinel; never infer it from an email, plan, display name,
+or response order.
 
 ### Overview and details
 
@@ -380,9 +384,11 @@ are implementation targets to measure, not validated performance claims.
 ## 8. Preferences and data boundaries
 
 Quotary stores preferences at `$XDG_CONFIG_HOME/quotary/config.json`, falling back
-to `~/.config/quotary/config.json` when XDG is absent or invalid. Store theme,
-layout, tracked sources, pins/order, refresh interval, privacy mode, and optional
-backend/config paths. Use a versioned format and atomic writes.
+to `~/.config/quotary/config.json` when XDG is absent or invalid. Store the named
+theme (`green`, `blue`, `amber`, or `monokai`), layout, tracked sources,
+pins/order, refresh interval, privacy mode, and optional backend/config paths. An
+absent or unknown theme name normalizes to `green`. Use a versioned format and
+atomic writes.
 
 Pass a configured backend config path as `CODEXBAR_CONFIG` to the child process;
 otherwise preserve the user's normal CodexBar resolution. Keep provider auth,
@@ -423,9 +429,11 @@ prototype, not a later promise that depends on four hardcoded screens.
 - [ ] Demo communicates the product with many fictional subscriptions and no setup.
 - [ ] All catalog entries remain discoverable; tracking is independent of backend enablement.
 - [ ] Bulk tracking includes all classified subscription sources, with active probes excluded.
-- [ ] 24 tracked subscriptions and a 106-provider mixed stress collection are navigable.
+- [ ] 24 tracked subscriptions and a 106-provider (107-selectable) mixed stress collection are navigable.
 - [ ] The same source remains selected through refresh, filtering, sorting, and resizing where it remains in scope.
 - [ ] Overview, Details, History, picker, help, and failure screens meet [UX.md](UX.md).
+- [ ] Green, Blue, Amber, and Monokai render in light and dark; monochrome keeps
+  every state cue without color.
 - [ ] All ordinary operations are accessible by keyboard and explained in context.
 
 ### Contract and correctness
