@@ -25,8 +25,9 @@ Bubble Tea/Lip Gloss v2 TUI in `internal/tui/`, normalized domain data in
 `internal/domain/` (their `internal/model/`), backend adapters under
 `internal/` (their `internal/adapter/` or `internal/githubx/`), a shared
 `internal/theme/`, a root `Makefile`, `.golangci.yml`, `.github/workflows/ci.yml`,
-`testdata/`, `tapes/`, and an `AGENTS.md` front door with `CLAUDE.md` pointing to
-it. The root `README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and
+`testdata/`, `tapes/`, and an `AGENTS.md` front door with `CLAUDE.md` as a
+symlink to it, so harnesses that prefer either name read the same guide.
+The root `README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and
 `LICENSE` are the only top-level documents; every other document lives under
 `docs/`.
 
@@ -62,8 +63,8 @@ Tasks:
   support libraries as the sibling projects. Record exact versions.
 - Add the house root files: `Makefile` (`all`, `build`, `test`, `vet`, `lint`,
   `docs-check`, `check`, `run`, `clean`), `.golangci.yml`,
-  `.github/workflows/ci.yml` running `make check`, `AGENTS.md`, a pointer-only
-  `CLAUDE.md`, `CONTRIBUTING.md`, and `tapes/` for VHS demos.
+  `.github/workflows/ci.yml` running `make check`, `AGENTS.md`, a `CLAUDE.md`
+  symlink to it, `CONTRIBUTING.md`, and `tapes/` for VHS demos.
 - Make `docs-check` verify that every relative Markdown link resolves and that
   no moved specification or plan is duplicated at the repository root.
 - Use Boardwalk's lint setup (`go tool golangci-lint` with errcheck, govet,
@@ -528,7 +529,7 @@ docs/evidence/               live checks, coverage, classification log,
                              measurements, captures
 docs/README.md               documentation index
 tapes/                       VHS demo scripts
-AGENTS.md / CLAUDE.md        contributor front door / pointer
+AGENTS.md / CLAUDE.md        contributor front door (CLAUDE.md is a symlink to AGENTS.md)
 ```
 
 Dependency rule: `cli` wires config, backend, refresh, and TUI; `tui` depends on

@@ -3,6 +3,13 @@
 Quotary is a Go terminal dashboard for AI subscription usage. Start with the
 documentation index at [docs/README.md](docs/README.md).
 
+This file is the single contributor guide for every agent harness.
+`CLAUDE.md` is a symlink to it, not a separate file: some harnesses read
+only `AGENTS.md`, some only `CLAUDE.md`, and some read `AGENTS.md` in
+preference to `CLAUDE.md`. Pointing both names at one file means no
+harness silently ignores the guide. Edit this file only; never replace
+the `CLAUDE.md` symlink with regular content or the two will drift.
+
 ## Working agreements
 
 - Product behavior: [docs/specs/product.md](docs/specs/product.md)
