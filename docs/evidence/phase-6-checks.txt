@@ -1,0 +1,50 @@
+Quotary Phase 6 verification
+date: 2026-10-20T01:10:14Z
+
+$ NO_COLOR=1 make check
+go vet ./...
+go tool github.com/golangci/golangci-lint/v2/cmd/golangci-lint run
+0 issues.
+go run ./internal/tools/docscheck .
+docs-check: ok
+go test ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+?   	github.com/juanrubio/quotary/internal/catalog	[no test files]
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+ok  	github.com/juanrubio/quotary/internal/live	(cached)
+ok  	github.com/juanrubio/quotary/internal/refresh	(cached)
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	(cached)
+
+$ go test -count=1 ./internal/refresh ./internal/live ./internal/tui
+ok  	github.com/juanrubio/quotary/internal/refresh	0.291s
+ok  	github.com/juanrubio/quotary/internal/live	1.236s
+ok  	github.com/juanrubio/quotary/internal/tui	23.357s
+
+$ go test -race -count=30 ./internal/refresh
+ok  	github.com/juanrubio/quotary/internal/refresh	12.088s
+
+$ go test -race -count=20 ./internal/live
+ok  	github.com/juanrubio/quotary/internal/live	25.887s
+
+$ make race
+go test -race ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+?   	github.com/juanrubio/quotary/internal/catalog	[no test files]
+ok  	github.com/juanrubio/quotary/internal/cli	1.394s
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	1.027s
+ok  	github.com/juanrubio/quotary/internal/live	(cached)
+ok  	github.com/juanrubio/quotary/internal/refresh	(cached)
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	170.141s

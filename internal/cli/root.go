@@ -2,14 +2,17 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
+	"github.com/juanrubio/quotary/internal/backend/codexbar"
 	"github.com/juanrubio/quotary/internal/backend/demo"
 	"github.com/juanrubio/quotary/internal/config"
+	"github.com/juanrubio/quotary/internal/live"
 	"github.com/juanrubio/quotary/internal/tui"
 )
 
@@ -36,7 +39,7 @@ func NewRootCmd() *cobra.Command {
 				return fmt.Errorf("quotary needs an interactive terminal; use --version for non-interactive output")
 			}
 			if !opts.demo {
-				return tui.Run(cmd.Context(), tui.Options{})
+				return runLive(cmd.Context())
 			}
 			runtime, err := demo.NewRuntime(demo.Scenario(opts.scenario), demoDeps())
 			if err != nil {
@@ -48,6 +51,20 @@ func NewRootCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&opts.demo, "demo", false, "run the offline fictional demonstration")
 	cmd.Flags().StringVar(&opts.scenario, "scenario", string(demo.ScenarioSubscription), "demo scenario: subscription, attention, catalog, empty, setup")
 	return cmd
+}
+
+func runLive(ctx context.Context) error {
+	store := config.NewMemoryStore(config.Defaults())
+	prefs := store.Load()
+	adapter, err := codexbar.New(codexbar.Options{Path: prefs.BackendPath, NativeOnly: true})
+	if err != nil {
+		return tui.Run(ctx, tui.Options{SetupError: err.Error()})
+	}
+	session, err := live.New(ctx, live.Options{Backend: adapter, Store: store})
+	if err != nil {
+		return err
+	}
+	return tui.Run(ctx, tui.Options{Session: session})
 }
 
 func demoDeps() demo.Deps {

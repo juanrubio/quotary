@@ -81,6 +81,10 @@ func (m *model) shellHeader(width int) []string {
 		second = "  " + m.theme.Accent.Render("/ "+m.query+"▌") + "    " + m.theme.Muted.Render(fmt.Sprintf("%d sources · %d attention", counts.Total, counts.Attention))
 	} else if m.session != nil {
 		second += "    " + m.theme.Muted.Render(fmt.Sprintf("Scenario: %s · %s", m.scenarioName(), m.clock()))
+		if m.backendVersion != "" {
+			version := truncateWidth(cleanText(m.backendVersion), max(8, width/3))
+			second += "    " + m.theme.Muted.Render("CodexBar "+version)
+		}
 	}
 	if m.session == nil || m.screen == screenHelp {
 		second = "  " + m.theme.Muted.Render("Terminal interface")
@@ -533,11 +537,15 @@ func (m *model) renderEmpty(width, _ int) []string {
 			body = []string{"The current filter has no matches.", "", "Press f to clear the filter."}
 		}
 	}
+	backendError := m.setupError
 	if m.session != nil && m.session.BackendError() != "" {
+		backendError = m.session.BackendError()
+	}
+	if backendError != "" {
 		title = "Connect CodexBar"
 		body = []string{
 			"Setup · no backend connection",
-			cleanText(m.session.BackendError()),
+			cleanText(backendError),
 			"",
 			"Set the executable in Settings, or add codexbar to PATH.",
 			"Keep its resource bundle beside the executable.",

@@ -510,6 +510,7 @@ internal/backend/demo/       deterministic scenarios and demo clock
 internal/catalog/            capability manifest, classification rubric, source
                              variants, bulk-tracking eligibility
 internal/refresh/            queue, scheduler, backoff, generations, cancellation
+internal/live/               live Session wiring: backend + scheduler + TUI seam
 internal/config/             config.Store seam, versioned JSON, XDG resolution,
                              atomic writes, migration policy
 internal/theme/              semantic tokens + Green/Blue/Amber/Monokai,
@@ -875,6 +876,46 @@ unchecked box without explanation.
 | Synthetic/redacted fixtures cover contract families | `TestSyntheticFixturesAreValidJSON`, `testdata/codexbar/` |
 
 Phase 6 wiring note: construct the CodexBar adapter with provider-native-only enabled for Codex/Claude (or explicitly record an equivalent scope decision) when live mode is wired.
+
+### 7.8 Phase 6 verification
+
+| Phase 6 requirement | Verification |
+| --- | --- |
+| Queue coalesces by canonical key/operation; unknown accounts coalesce only within provider/variant scope | `TestCoalescesUnknownAndDeduplicatesInflight` |
+| Maximum three backend jobs; 107-source stress stays responsive | `TestConcurrencyCeilingAndStress` |
+| Interval reads Store changes without restart; 60 s minimum | `TestIntervalReadsStoreWithoutRestart` |
+| Visible/selected priority without starvation, with aging and live selected-source ordering | `TestPrioritySelectedBeforeBackground`, `TestAgingPreventsBackgroundStarvation`, `TestSetPriorityReordersQueuedWork`, `TestLivePrioritizeSelectedAheadOfBackground` |
+| One bulk sweep at a time; manual requests join existing in-flight work | `TestBulkProgressAndSingleSweep`, `TestCoalescesUnknownAndDeduplicatesInflight` |
+| Staggered starts; last attempt tracked separately from last success | `TestStaggeredStarts`, `TestRetainsLastSuccessAndBackoff` |
+| Superseded generations coalesce/join; changed-context, untracked, and invalidated results are dropped without overwriting state | `TestChangedContextDropsLateResult`, `TestUntrackedResultDroppedWithoutState`, `TestInvalidateDropsQueuedAndInflightResults`, `TestSupersededGenerationCoalescesAndUsesLatest` |
+| Retained last success survives transient failure; auth failures await explicit retry; backoff suppresses automatic retries | `TestRetainsLastSuccessAndBackoff`, `TestAuthFailureAwaitsExplicitRetry`, `TestBackoffSuppressesAutomaticButNotManualRetry` |
+| Transient backoff/jitter and provider retry hints | `TestRetainsLastSuccessAndBackoff`, `TestRetryAfterHookSetsBackoff` |
+| History singleflight, cache/TTL/force refresh, invalidation, concurrent loads, and partial history retained with error | `TestHistoryCacheAndForceRefresh`, `TestHistoryTTLExpiryUsesClock`, `TestHistorySingleflightAndInvalidation`, `TestInvalidateClearsRetainedStateAndHistory`, `TestLivePartialHistoryIsCached` |
+| Cancellation stops owned work | `TestCancellationStopsWorkers` |
+| Bulk progress exposes completed/total, one sweep id, dropped-member accounting, empty sweeps, and new keys during a sweep | `TestBulkProgressAndSingleSweep`, `TestBulkAccountsForDroppedMembersAndEmptySweep`, `TestBulkAddsNewKeysDuringActiveSweep` |
+| Reliable result delivery and blocked consumers | `TestBlockedResultConsumerDoesNotDropResults` |
+| Live scheduler-backed CLI/TUI session, tracked refresh, retained failure, history, tracking/pinning | `TestLiveSessionRefreshesTrackedSources`, `TestLiveSessionRetainsStaleOnFailure`, `TestLiveSessionTrackingPinningAndHistory`, `TestLiveSessionBackendSetupError` |
+| Live returned `@unknown`/account keys replace bare skeletons; multi-account refresh, sequential account changes, automatic failure overlays one identity, and partial rows+errors are applied; finish-during-untrack cannot resurrect snapshots | `TestLiveReconcilesBareTrackedKeyWithReturnedUnknownAccount`, `TestLiveMultiAccountReplacesBareSkeletonAndRefreshesAccount`, `TestLiveSequentialAccountChangePrunesOldSnapshot`, `TestLiveAutomaticFailureOverlaysEstablishedUnknownSnapshot`, `TestLiveAppliesPartialSnapshotsWithError`, `TestUntrackDuringFinishDoesNotResurrectSnapshot` |
+| Live failure paths notify the TUI and render non-Queued state; adapter-shaped error snapshots replace bare skeletons | `TestLiveFailureSignalsEvents`, `TestLiveSessionRetainsStaleOnFailure`, `TestLiveAdapterShapedFailureReplacesSkeleton` |
+| Live manual bulk retries auth-awaiting members, records final fast-backend progress, and completes after untracking a queued member | `TestLiveManualBulkRetriesAuthAwaitingSource`, `TestLiveFastBulkRecordsFinalProgress`, `TestLiveBulkProgressCompletesAfterUntrackingQueuedMember` |
+| Live history is non-blocking, fills from cache, and explicit TUI refresh forces within TTL | `TestLiveHistoryLoadDoesNotBlockEventLoop`, `TestLiveHistoryForceReloadsWithinTTL` |
+| Live interval loop re-reads Store and schedules automatically without restart | `TestIntervalChangeSchedulesWithoutRestart` |
+| Bubble Tea event-loop result notification refreshes the rendered model | `TestLiveUpdateMessageReloadsRenderedModel` |
+| Live bulk sweep uses scheduler bulk progress | `TestBulkProgressAndSingleSweep`, `TestBulkAccountsForDroppedMembersAndEmptySweep`, `TestBulkAddsNewKeysDuringActiveSweep` |
+| 107-source scheduler-backed TUI responsiveness | `TestSchedulerBackedTUIStaysResponsiveWith107Sources` |
+| Backend version is sanitized before header rendering | `TestBackendVersionHeaderIsSanitized` |
+| Live local tick advances ages/countdowns without backend traffic and re-checks visible history through the cache | `TestLiveLocalTickAdvancesAgeWithoutBackendTraffic` |
+| Bulk sweeps joining executing work complete and allow later sweeps | `TestBulkJoinsExecutingTaskAndCompletes` |
+| Sequential account changes prune old live snapshots | `TestLiveSequentialAccountChangePrunesOldSnapshot` |
+| Live startup calls Backend.Version exactly once and surfaces it in the shell | `TestLiveCallsVersionExactlyOnce` |
+| Scheduler workers terminate and Wait returns after cancellation | `TestSchedulerWaitReturnsAfterCancellation` |
+| Partial snapshots returned with operation errors remain last-success readings; error-only snapshots do not replace prior success | `TestSchedulerRetainsPartialSnapshotsWithError`, `TestSchedulerErrorOnlySnapshotsRetainPriorSuccess`, `TestLiveAppliesPartialSnapshotsWithError` |
+| Import boundaries cover refresh/live | `TestImportBoundaries` |
+| Race-detector coverage, including repeated scheduler/live races | `make race`, `go test -race -count=30 ./internal/refresh`, `go test -race -count=20 ./internal/live` |
+
+Live mode constructs the CodexBar adapter and scheduler through `internal/live`, delivers scheduler completions to the Bubble Tea event loop as `liveUpdateMsg`, uses one manual scheduler bulk sweep with completed/total footer status, re-reads the configured interval for automatic work, and closes owned workers when the TUI exits. History is dispatched in the background through the scheduler's 15-minute cache; explicit refresh forces, and the event notification reloads the rendered history. Countdown rendering remains local and generates no network traffic.
+
+Phase 9 deferrals: CodexBar currently reports no retry timestamp, so the `RetryAfter` seam is dormant; catalog discovery still occurs during live session construction rather than behind the first shell paint; an interval settings change takes effect when the current timer next fires. These are recorded rather than claimed as verified behavior.
 
 ## 8. Suggested commit/PR sequence
 

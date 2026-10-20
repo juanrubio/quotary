@@ -41,8 +41,9 @@ type Session interface {
 
 // Options configures a TUI session.
 type Options struct {
-	Demo    bool
-	Session Session
+	Demo       bool
+	Session    Session
+	SetupError string
 }
 
 type screen int
@@ -55,6 +56,48 @@ const (
 	screenSettings
 	screenHelp
 )
+
+type liveUpdateMsg struct{}
+
+type localTickMsg struct{}
+
+func localTick() tea.Cmd {
+	return tea.Tick(time.Second, func(time.Time) tea.Msg { return localTickMsg{} })
+}
+
+type liveEventSession interface {
+	Events() <-chan struct{}
+}
+
+type versionedSession interface {
+	BackendVersion() string
+}
+
+type prioritySession interface {
+	Prioritize(visible []string, selected string)
+}
+
+type liveBulkSession interface {
+	StartBulk([]string) string
+	BulkProgress() (int, int, bool)
+}
+
+type liveHistorySession interface {
+	HistoryWithForce(context.Context, backend.HistoryRequest, bool) (domain.HistorySnapshot, error)
+}
+
+func waitLiveEvent(events <-chan struct{}) tea.Cmd {
+	if events == nil {
+		return nil
+	}
+	return func() tea.Msg {
+		_, ok := <-events
+		if !ok {
+			return nil
+		}
+		return liveUpdateMsg{}
+	}
+}
 
 type refreshTickMsg struct {
 	key        string
@@ -90,11 +133,14 @@ type model struct {
 	detailScroll    int
 	historyScroll   int
 
-	prefs    config.Preferences
-	theme    theme.Styles
-	location *time.Location
-	light    bool
-	noColor  bool
+	prefs          config.Preferences
+	theme          theme.Styles
+	liveEvents     <-chan struct{}
+	setupError     string
+	backendVersion string
+	location       *time.Location
+	light          bool
+	noColor        bool
 
 	catalog    backend.CatalogSnapshot
 	history    domain.HistorySnapshot
@@ -119,11 +165,14 @@ func Run(ctx context.Context, opts Options) error {
 	m := newModel(opts)
 	p := tea.NewProgram(m, tea.WithContext(ctx))
 	_, err := p.Run()
+	if closer, ok := opts.Session.(interface{ Close() error }); ok {
+		_ = closer.Close()
+	}
 	return err
 }
 
 func newModel(opts Options) *model {
-	m := &model{demo: opts.Demo, session: opts.Session, filter: "all", location: time.Local, baseStates: map[string]domain.SourceStatus{}}
+	m := &model{demo: opts.Demo, session: opts.Session, filter: "all", location: time.Local, baseStates: map[string]domain.SourceStatus{}, setupError: opts.SetupError}
 	m.noColor = os.Getenv("NO_COLOR") != "" || os.Getenv("TERM") == "dumb"
 	if m.session != nil {
 		m.prefs = m.session.Preferences()
@@ -133,12 +182,25 @@ func newModel(opts Options) *model {
 		m.prefs = config.Defaults()
 	}
 	m.prefs = config.Normalize(m.prefs)
+	if source, ok := opts.Session.(liveEventSession); ok {
+		m.liveEvents = source.Events()
+	}
+	if versioned, ok := opts.Session.(versionedSession); ok {
+		m.backendVersion = versioned.BackendVersion()
+	}
 	m.load()
 	m.applyTheme()
+	m.syncLivePriorities()
 	return m
 }
 
-func (m *model) Init() tea.Cmd { return tea.RequestBackgroundColor }
+func (m *model) Init() tea.Cmd {
+	cmds := []tea.Cmd{tea.RequestBackgroundColor, waitLiveEvent(m.liveEvents)}
+	if m.liveEvents != nil {
+		cmds = append(cmds, localTick())
+	}
+	return tea.Batch(cmds...)
+}
 
 func (m *model) load() {
 	if m.session == nil {
@@ -296,6 +358,19 @@ func (m *model) selectedSnapshot() (domain.UsageSnapshot, bool) {
 	return m.visible[m.selected], true
 }
 
+func (m *model) syncLivePriorities() {
+	session, ok := m.session.(prioritySession)
+	if !ok || len(m.visible) == 0 {
+		return
+	}
+	start, end := pageStart(m), min(pageEnd(m), len(m.visible))
+	keys := make([]string, 0, end-start)
+	for _, snapshot := range m.visible[start:end] {
+		keys = append(keys, snapshot.Key.String())
+	}
+	session.Prioritize(keys, m.selectedKey)
+}
+
 func (m *model) move(delta int) {
 	if len(m.visible) == 0 {
 		return
@@ -315,6 +390,7 @@ func (m *model) move(delta int) {
 		m.historyErr = ""
 	}
 	m.detailScroll = 0
+	m.syncLivePriorities()
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -324,6 +400,21 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		m.light = isLight(msg.Color)
 		m.applyTheme()
+	case liveUpdateMsg:
+		m.load()
+		if m.historyVisible() {
+			m.loadHistoryForce(false)
+		}
+		return m, waitLiveEvent(m.liveEvents)
+	case localTickMsg:
+		if m.liveEvents == nil {
+			return m, nil
+		}
+		m.load()
+		if m.historyVisible() {
+			m.loadHistoryForce(false)
+		}
+		return m, localTick()
 	case refreshTickMsg:
 		return m.onRefreshTick(msg)
 	case tea.KeyPressMsg:
@@ -337,6 +428,11 @@ func (m *model) onRefreshTick(msg refreshTickMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	if m.refreshAll {
+		if bulk, ok := m.session.(liveBulkSession); ok {
+			if done, total, active := bulk.BulkProgress(); active {
+				m.status = fmt.Sprintf("Refreshing %d/%d", done, total)
+			}
+		}
 		if m.refreshAllIdx >= len(m.refreshAllKeys) {
 			return m.finishRefresh()
 		}
@@ -707,7 +803,13 @@ func (m *model) startRefreshAll() (tea.Model, tea.Cmd) {
 	m.refreshAllKeys = nil
 	for _, snapshot := range m.all {
 		m.refreshAllKeys = append(m.refreshAllKeys, snapshot.Key.String())
-		m.session.StartRefresh(snapshot.Key.String())
+	}
+	if bulk, ok := m.session.(liveBulkSession); ok {
+		bulk.StartBulk(m.refreshAllKeys)
+	} else {
+		for _, key := range m.refreshAllKeys {
+			m.session.StartRefresh(key)
+		}
 	}
 	m.status = "Queued all tracked sources"
 	m.load()
@@ -756,7 +858,7 @@ func (m *model) onRefresh(all bool) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	if !all && m.historyVisible() {
-		m.loadHistory()
+		m.loadHistoryForce(true)
 		return m, nil
 	}
 	var key string
@@ -856,6 +958,10 @@ func (m *model) loadHistoryIfNeeded() {
 }
 
 func (m *model) loadHistory() {
+	m.loadHistoryForce(false)
+}
+
+func (m *model) loadHistoryForce(force bool) {
 	if m.session == nil {
 		return
 	}
@@ -867,20 +973,34 @@ func (m *model) loadHistory() {
 	if days != 30 {
 		days = 7
 	}
-	history, err := m.session.History(context.Background(), backend.HistoryRequest{
+	request := backend.HistoryRequest{
 		ProviderID: snapshot.ProviderID,
 		Variant:    snapshot.Key.Variant,
 		SourceKey:  snapshot.Key.String(),
 		Days:       days,
-	})
+	}
+	var history domain.HistorySnapshot
+	var err error
+	if session, ok := m.session.(liveHistorySession); ok {
+		history, err = session.HistoryWithForce(context.Background(), request, force)
+	} else {
+		history, err = m.session.History(context.Background(), request)
+	}
 	if err != nil {
 		m.history = domain.HistorySnapshot{}
 		m.historyErr = safeError(err)
 		return
 	}
+	previousScroll := m.historyScroll
+	previousKey := m.history.Key.String()
+	previousDays := m.history.Days
 	m.history = sanitizeHistory(history)
 	m.historyErr = ""
-	m.historyScroll = 0
+	if !force && previousKey == m.history.Key.String() && previousDays == m.history.Days {
+		m.historyScroll = previousScroll
+	} else {
+		m.historyScroll = 0
+	}
 }
 
 func (m *model) helpPageSize() int { return max(1, m.height-6-5) }
