@@ -619,10 +619,10 @@ Phase 9 closes every row.
 | Unknown names/Unicode/control sequences cannot break or inject | P3, P9 | Sanitization, truncation, fuzz tests |
 | Demo makes no backend/credential/session access | P2 | `TestRuntimeReadsOnlyInMemoryFixtures`, `TestRuntimeUsesInjectedRunner`, `TestDemoProductionSourcesHaveNoExternalIO` |
 | Cancellation/timeout/quit clean up and restore terminal | P5, P6, P9 | Runner, quit, and signal tests |
-| Claude/Codex extra windows and supported history | P8 | Live evidence records |
-| Muse omitted windows and token-only history | P8 | Live evidence records |
-| Gemini app, Gemini CLI, Antigravity distinct and honest | P8 | Live evidence records |
-| Additional subscription providers via shared components | P8 | Live evidence records |
+| Claude/Codex extra windows and supported history | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
+| Muse omitted windows and token-only history | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
+| Gemini app, Gemini CLI, Antigravity distinct and honest | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
+| Additional subscription providers via shared components | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
 | Account-specific checks recorded separately | P8 | `docs/evidence/` index with date/version/command |
 
 Open rows need a dated evidence record with backend version and reason, not an
@@ -931,6 +931,21 @@ Phase 9 deferrals: CodexBar currently reports no retry timestamp, so the `RetryA
 | Unknown theme normalizes to Green | `TestJSONStoreUnknownThemeNormalizesGreen` |
 | Live CLI uses the JSON store, passes CODEXBAR_CONFIG only when configured, and surfaces store warnings | `TestLiveFirstRunSeedsOnlyCompatibleEnabledSources`, `TestJSONStoreRoundTrip`, `TestConfiguredEnvironmentReachesRunner`, `TestLiveStoreWarningPropagates`, `TestLiveConfigWarningRendersInShell`, `TestLiveCodexbarOptionsOnlyPassesConfiguredEnv` |
 | Catalog/live import boundaries | `TestImportBoundaries` |
+
+### 7.10 Phase 8 verification
+
+| Phase 8 requirement | Verification |
+| --- | --- |
+| Claude/Codex/Muse/Gemini web/Gemini API/Antigravity/additional provider cases are recorded separately | `docs/evidence/live-validation.md` case table |
+| Unavailable cases share document-level date/version and per-case command/observed state/native-only availability | `docs/evidence/live-validation.md` |
+| Unavailable credentials are recorded as unavailable, not passed | Environment finding and conclusion in `docs/evidence/live-validation.md` |
+| No credentials, cookies, emails, tokens, raw payloads, or project paths stored | Manual evidence review; fixture policy `docs/fixtures-policy.md` |
+| Fixture/contract coverage is separated from live verification | Phase 5 §7.7 tables and Phase 8 case table |
+
+Live exit gate: no credential-backed case existed in this environment, so the
+live-success clause is not asserted. The documented-unavailable path is complete;
+all live cases remain open/unavailable pending an installed CodexBar and real
+credentials.
 
 ## 8. Suggested commit/PR sequence
 

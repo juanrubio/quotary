@@ -16,6 +16,8 @@ Source-of-truth documents for the Quotary prototype.
 - [Implementation prompt](prompts/implement-all-phases.md): the phase loop and
   mandatory external Codex/GPT-6 Astra review gate.
 - [Evidence](evidence): live checks, review records, captures, and measurements.
+- [Phase 8 live validation record](evidence/live-validation.md): unavailable
+  credentials and setup limits, recorded honestly.
 - [Fixture policy](fixtures-policy.md) and [VHS tape guide](tapes.md).
 
 ## Decisions

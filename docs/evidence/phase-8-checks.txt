@@ -1,0 +1,43 @@
+Quotary Phase 8 verification
+date: 2026-10-20T02:35:40Z
+
+$ printf QUOTARY_CODEXBAR_PATH/QUOTARY_CONFIG_PATH/XDG_CONFIG_HOME
+QUOTARY_CODEXBAR_PATH=<unset>
+QUOTARY_CONFIG_PATH=<unset>
+XDG_CONFIG_HOME=/home/joni/.config
+
+$ config presence
+absent: /home/joni/.config/quotary/config.json
+
+$ command -v codexbar
+<not found>
+
+$ go test -count=1 ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	0.007s
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	1.502s
+ok  	github.com/juanrubio/quotary/internal/backend/demo	1.794s
+ok  	github.com/juanrubio/quotary/internal/catalog	0.008s
+ok  	github.com/juanrubio/quotary/internal/cli	0.073s
+ok  	github.com/juanrubio/quotary/internal/config	0.008s
+ok  	github.com/juanrubio/quotary/internal/domain	0.012s
+ok  	github.com/juanrubio/quotary/internal/live	1.777s
+ok  	github.com/juanrubio/quotary/internal/refresh	0.306s
+ok  	github.com/juanrubio/quotary/internal/theme	0.078s
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	0.006s
+ok  	github.com/juanrubio/quotary/internal/tui	27.706s
+
+$ go test -race -count=1 ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	1.020s
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	2.908s
+ok  	github.com/juanrubio/quotary/internal/backend/demo	4.698s
+ok  	github.com/juanrubio/quotary/internal/catalog	1.030s
+ok  	github.com/juanrubio/quotary/internal/cli	1.392s
+ok  	github.com/juanrubio/quotary/internal/config	1.035s
+ok  	github.com/juanrubio/quotary/internal/domain	1.031s
+ok  	github.com/juanrubio/quotary/internal/live	2.761s
+ok  	github.com/juanrubio/quotary/internal/refresh	1.379s
+ok  	github.com/juanrubio/quotary/internal/theme	1.423s
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	1.027s
+ok  	github.com/juanrubio/quotary/internal/tui	175.062s
