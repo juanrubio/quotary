@@ -18,6 +18,12 @@ Source-of-truth documents for the Quotary prototype.
 - [Evidence](evidence): live checks, review records, captures, and measurements.
 - [Phase 8 live validation record](evidence/live-validation.md): unavailable
   credentials and setup limits, recorded honestly.
+- [Kitty `REP` compatibility report](evidence/kitty-rep-compatibility.md):
+  confirmed column-padding defect in kitty terminals without the `REP`
+  escape sequence, fixed by the REP-expansion writer in `internal/tui`.
+- [Canvas-background re-assertion report](evidence/canvas-background-reassertion.md):
+  dark "shadow" bands from unstyled cells after style resets, fixed by
+  re-asserting the canvas style in `model.paintLine`.
 - [Fixture policy](fixtures-policy.md) and [VHS tape guide](tapes.md).
 
 ## Decisions

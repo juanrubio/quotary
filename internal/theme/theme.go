@@ -176,6 +176,16 @@ func ValidateContrast(name string, light bool) error {
 // BackgroundSequence returns the truecolor background escape for a #RRGGBB
 // color, used when preserving a panel surface across nested style resets.
 func BackgroundSequence(hex string) string {
+	return colorSequence(hex, 48)
+}
+
+// ForegroundSequence returns the truecolor foreground escape for a #RRGGBB
+// color, used when re-asserting the canvas style across nested style resets.
+func ForegroundSequence(hex string) string {
+	return colorSequence(hex, 38)
+}
+
+func colorSequence(hex string, code int) string {
 	hex = strings.TrimPrefix(hex, "#")
 	if len(hex) != 6 {
 		return ""
@@ -184,5 +194,5 @@ func BackgroundSequence(hex string) string {
 	if err != nil {
 		return ""
 	}
-	return fmt.Sprintf("\x1b[48;2;%d;%d;%dm", value>>16&0xff, value>>8&0xff, value&0xff)
+	return fmt.Sprintf("\x1b[%d;2;%d;%d;%dm", code, value>>16&0xff, value>>8&0xff, value&0xff)
 }

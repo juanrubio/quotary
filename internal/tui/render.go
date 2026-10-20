@@ -59,9 +59,32 @@ func (m *model) render(width, height int) string {
 		lines = lines[:height]
 	}
 	for index := range lines {
-		lines[index] = m.theme.Canvas.Render(padRight(lines[index], width))
+		lines[index] = m.paintLine(lines[index], width)
 	}
 	return strings.Join(lines, "\n")
+}
+
+// paintLine pads line to width and ensures every cell carries the canvas
+// style — Text foreground on the Canvas background. Lipgloss fragments reset
+// styling with ESC[m between fragments, and that reset also returns the
+// terminal to its *default* foreground and background. On terminals whose
+// default background is not the canvas color — kitty defaults to black — the
+// cells after each reset (separators, trailing padding, and line-ends the
+// renderer skips) paint as dark bands beside the content, and unstyled text
+// after a reset would take the terminal's default foreground instead of the
+// palette Text colour. Re-asserting only the background regressed the
+// foreground that Canvas.Render used to apply, so both are re-asserted.
+// See docs/evidence/kitty-rep-compatibility.md.
+//
+// This mirrors surface(), which keeps panel backgrounds alive the same way.
+func (m *model) paintLine(line string, width int) string {
+	line = padRight(line, width)
+	if m.theme.Mono {
+		return line
+	}
+	sequence := theme.ForegroundSequence(m.theme.Palette.Text) +
+		theme.BackgroundSequence(m.theme.Palette.Canvas)
+	return sequence + strings.ReplaceAll(line, "\x1b[m", "\x1b[m"+sequence)
 }
 
 func (m *model) shellHeader(width int) []string {
