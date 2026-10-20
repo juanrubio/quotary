@@ -359,6 +359,35 @@ func TestSyntheticFixturesAreValidJSON(t *testing.T) {
 	_ = errors.New
 }
 
+func TestCatalogAcceptsBareProviderList(t *testing.T) {
+	// CodexBar 0.78.0 answers `config providers --format json` with a bare
+	// JSON array rather than a {"providers": [...]} envelope.
+	body := []byte(`[{"provider":"codex","enabled":true,"defaultEnabled":false,"displayName":"Codex"},{"provider":"gemini","enabled":false,"defaultEnabled":true,"displayName":"Gemini"}]`)
+	a, _ := adapterWith(body)
+	catalog, err := a.Catalog(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(catalog.Providers) != 2 {
+		t.Fatalf("providers=%d", len(catalog.Providers))
+	}
+	codex := catalog.Providers[0]
+	if codex.ProviderID != "codex" || !codex.Enabled || codex.DefaultEnabled || !codex.Available {
+		t.Fatalf("codex=%+v", codex)
+	}
+	gemini := catalog.Providers[1]
+	if gemini.Enabled || !gemini.DefaultEnabled || !gemini.Available {
+		t.Fatalf("gemini=%+v", gemini)
+	}
+}
+
+func TestCatalogBareEmptyProviderListIsUnsupported(t *testing.T) {
+	a, _ := adapterWith([]byte(`[]`))
+	if _, err := a.Catalog(context.Background()); categoryOf(t, err) != domain.ErrUnsupported {
+		t.Fatalf("category=%v err=%v", categoryOf(t, err), err)
+	}
+}
+
 func TestCatalogKeepsEnabledAndDefaultEnabledSeparate(t *testing.T) {
 	a, _ := adapterWith(fixture(t, "catalog.json"))
 	catalog, err := a.Catalog(context.Background())

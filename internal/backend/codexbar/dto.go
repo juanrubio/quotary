@@ -26,19 +26,28 @@ type providerDTO struct {
 }
 
 func parseCatalog(stdout []byte) (backend.CatalogSnapshot, error) {
-	if len(bytes.TrimSpace(stdout)) == 0 {
+	trimmed := bytes.TrimSpace(stdout)
+	if len(trimmed) == 0 {
 		return backend.CatalogSnapshot{}, scoped(domain.ErrEmptyStdout, "", "catalog returned no data")
 	}
-	var raw map[string]any
-	if err := json.Unmarshal(stdout, &raw); err != nil {
-		return backend.CatalogSnapshot{}, scoped(domain.ErrMalformedJSON, "", "catalog JSON is malformed")
-	}
-	if category := errorCategory(raw); category != "" {
-		return backend.CatalogSnapshot{}, scoped(category, "", "catalog reported an error")
-	}
 	var dto catalogDTO
-	if err := json.Unmarshal(stdout, &dto); err != nil {
-		return backend.CatalogSnapshot{}, scoped(domain.ErrMalformedJSON, "", "catalog JSON is malformed")
+	if trimmed[0] == '[' {
+		// CodexBar 0.78.0 answers with a bare provider array; accept that
+		// alongside the {"providers": [...]} envelope form.
+		if err := json.Unmarshal(trimmed, &dto.Providers); err != nil {
+			return backend.CatalogSnapshot{}, scoped(domain.ErrMalformedJSON, "", "catalog JSON is malformed")
+		}
+	} else {
+		var raw map[string]any
+		if err := json.Unmarshal(trimmed, &raw); err != nil {
+			return backend.CatalogSnapshot{}, scoped(domain.ErrMalformedJSON, "", "catalog JSON is malformed")
+		}
+		if category := errorCategory(raw); category != "" {
+			return backend.CatalogSnapshot{}, scoped(category, "", "catalog reported an error")
+		}
+		if err := json.Unmarshal(trimmed, &dto); err != nil {
+			return backend.CatalogSnapshot{}, scoped(domain.ErrMalformedJSON, "", "catalog JSON is malformed")
+		}
 	}
 	if len(dto.Providers) == 0 {
 		return backend.CatalogSnapshot{}, scoped(domain.ErrUnsupported, "", "catalog has no provider list")
