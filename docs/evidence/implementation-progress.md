@@ -13,5 +13,5 @@ External review: separate Codex CLI process using GPT-6 Astra. See
 | 5 — CodexBar adapter | complete | d1e49af | make check, make race, adapter contract suite | PASS (Muse muse-wonder-full-1.0 substitution; Codex quota exhausted) | Live validation deferred to Phase 8; Phase 6 must wire NativeOnly |
 | 6 — Refresh scheduler | complete | ce66a06 | make check, make race, repeated scheduler/live races | PASS WITH DOCUMENTED OPEN ITEMS (Muse substitution; 9 rounds) | Phase 9 deferrals: catalog before first paint, interval timer reset, dormant RetryAfter |
 | 7 — Catalog and preferences | complete | 62686d8 | make check, make race, catalog/config/live tests | PASS WITH DOCUMENTED OPEN ITEMS (Muse substitution; 3 rounds) | 84 unknown providers; P2 manifest hints/variant-log/Gemini bulk semantics for Phase 9 |
-| 8 — Live validation | complete | pending | make check, make race, live environment record | PASS WITH DOCUMENTED OPEN ITEMS (Muse substitution; 2 rounds) | No CodexBar executable/credentials; all live cases open/unavailable |
+| 8 — Live validation | complete | be3f41c | make check, make race, live environment record | PASS WITH DOCUMENTED OPEN ITEMS (Muse substitution; 2 rounds) | No CodexBar executable/credentials; all live cases open/unavailable |
 | 9 — Hardening and closeout | not started | — | — | — | — |
