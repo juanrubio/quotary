@@ -168,7 +168,13 @@ type model struct {
 // Run starts the interactive application.
 func Run(ctx context.Context, opts Options) error {
 	m := newModel(opts)
-	p := tea.NewProgram(m, tea.WithContext(ctx))
+	// Expand REP sequences before they reach the terminal: kitty versions
+	// without REP support silently discard them, which collapses the
+	// compact overview table's column padding. The expansion is
+	// transparent on terminals that do implement REP. Run constructs the
+	// only tea.NewProgram in the repository, so this wrapper covers every
+	// escape sequence the application emits.
+	p := tea.NewProgram(m, tea.WithContext(ctx), tea.WithOutput(newRepExpandWriter(os.Stdout)))
 	_, err := p.Run()
 	if closer, ok := opts.Session.(interface{ Close() error }); ok {
 		_ = closer.Close()
