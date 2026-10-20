@@ -115,19 +115,19 @@ func TestConcurrencyCeilingAndStress(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	results := s.Run(ctx)
-	for i := 0; i < 107; i++ {
+	for i := 0; i < 108; i++ {
 		s.Enqueue(Request{Key: domain.SourceKey{Provider: fmt.Sprintf("provider-%03d", i)}, Context: "stress"})
 	}
 	seen := map[string]bool{}
-	for i := 0; i < 107; i++ {
+	for i := 0; i < 108; i++ {
 		result := waitResult(t, results)
 		if result.Dropped {
 			t.Fatalf("stress result dropped: %+v", result)
 		}
 		seen[result.Key.String()] = true
 	}
-	if len(seen) != 107 {
-		t.Fatalf("completed %d/107", len(seen))
+	if len(seen) != 108 {
+		t.Fatalf("completed %d/108", len(seen))
 	}
 	_, _, maxActive := be.counts()
 	if maxActive > 3 {

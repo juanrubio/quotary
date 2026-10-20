@@ -82,7 +82,7 @@ mkdir -p "$review_cache"
 GOCACHE="$review_cache" GOTMPDIR="${TMPDIR:-/tmp}" TMPDIR="${TMPDIR:-/tmp}" \
 muse exec \
   --model muse-wonder-full-1.0 \
-  --reasoning-effort high \
+  --reasoning-effort "${MUSE_REASONING_EFFORT:-high}" \
   --workspace "$root" \
   --trust-workspace \
   --approval-mode never \

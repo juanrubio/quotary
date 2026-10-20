@@ -3,8 +3,11 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -87,7 +90,14 @@ func demoDeps() demo.Deps {
 	}
 }
 
-// Execute runs the root command and returns its error.
+// Execute runs the root command with interrupt/termination cancellation so
+// Bubble Tea can restore the terminal on signal-driven shutdown.
 func Execute() error {
-	return NewRootCmd().Execute()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	err := NewRootCmd().ExecuteContext(ctx)
+	if errors.Is(err, context.Canceled) {
+		return nil
+	}
+	return err
 }

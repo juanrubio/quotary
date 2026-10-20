@@ -13,7 +13,7 @@
     attention:'Source failures stay local. Stale readings retain their age; missing data never becomes zero.',
     detail:'One Google source, separate model groups. No combined Google quota.',
     history:'Muse history. Known tokens, a visible coverage gap, and no invented dollar estimate.',
-    picker:'The source library. 106 provider IDs become 107 selectable sources with Google variants.',
+    picker:'The source library. 106 provider IDs become 108 selectable sources with Google variants.',
     empty:'First launch. A direct path to tracking many subscriptions or exploring the demo.',
     backend:'Backend unavailable. Setup guidance leaves the rest of the interface usable.',
     help:'Keyboard navigation stays visible. The browser frame is a review tool, not part of the TUI.'
@@ -241,16 +241,16 @@
   function library(query=state.pickerQuery) {
     const fixtures=new Map(F.sources.map(s=>[s.provider,s]));
     let entries=F.catalog.flatMap(c=>{
-      if(c.provider==='gemini')return [{id:'gemini:web',provider:'gemini',name:'Google · Gemini app',kind:'Subscription'},{id:'gemini:api',provider:'gemini',name:'Google · Gemini CLI',kind:'Subscription'}];
+      if(c.provider==='gemini')return [{id:'gemini:configured',provider:'gemini',name:'Google · Gemini (configured)',kind:'Subscription'},{id:'gemini:web',provider:'gemini',name:'Google · Gemini app',kind:'Subscription'},{id:'gemini:api',provider:'gemini',name:'Google · Gemini CLI',kind:'Subscription'}];
       const f=fixtures.get(c.provider),api=['openai','azureopenai','vertexai','claudeplatform','bedrock','deepseek'].includes(c.provider);
       return [{id:c.provider+':configured',provider:c.provider,name:f?.name||c.displayName,kind:f?'Subscription':api?'API usage':['openrouter','replicate','fal'].includes(c.provider)?'Credits':'Unclassified'}];
     });
-    const priorities=['claude:configured','codex:configured','muse:configured','gemini:web','gemini:api','antigravity:configured'];
+    const priorities=['claude:configured','codex:configured','muse:configured','gemini:configured','gemini:web','gemini:api','antigravity:configured'];
     entries.sort((a,b)=>{const aa=priorities.indexOf(a.id),bb=priorities.indexOf(b.id);return (aa<0?99:aa)-(bb<0?99:bb)||a.name.localeCompare(b.name);});
     return entries.filter(c=>(c.name+' '+c.kind).toLowerCase().includes(query.toLowerCase()));
   }
   function picker() {
-    header('Source library · 106 providers · 107 selectable sources');
+    header('Source library · 106 providers · 108 selectable sources');
     grid.text(2,6,'Track the subscriptions you use.','text',null,true);
     if(state.w>=100)grid.right(state.w-2,6,`${state.tracked.size} tracked`,'accent');
     grid.text(2,8,'[ Track all subscriptions ]','accent',null,true);region(2,8,27,1,trackAll);

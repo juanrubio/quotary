@@ -1,6 +1,6 @@
 # Quotary — product and technical specification
 
-Status: proposed prototype; no application implementation or live account validation.
+Status: implemented prototype; Go TUI, demo, adapter, scheduler, catalog, and preferences complete. Live account validation remains open/unavailable as recorded in `docs/evidence/live-validation.md`.
 Date: 2026-10-16.
 Visual contract: [tui.md](tui.md).
 
@@ -167,8 +167,11 @@ Give each tracked source a stable key combining provider and selected variant,
 such as `codex:configured`, `gemini:web`, or `gemini:api`. Configured mode omits
 `--source` and preserves the backend's choice. The catalog alone cannot reveal
 that choice. When importing an enabled provider with several variants, retain
-configured mode until the user selects explicit variants. Selecting both Google
-variants replaces that provider's generic entry with the two distinct entries.
+configured mode alongside explicit variants. Gemini therefore exposes configured,
+app (`web`), and CLI (`api`) entries (108 selectable sources). Bulk tracking uses
+only the configured Gemini entry so one backend-resolved account cannot appear
+under duplicate configured/web/api identities; explicit variants are individually
+trackable.
 Cache and selection keys include this source key and any established account key.
 The canonical form is `<provider>[:<variant>][@<account>]`, where the account key
 comes from the backend (percent-encoded when it contains reserved characters) or
@@ -428,40 +431,43 @@ prototype, not a later promise that depends on four hardcoded screens.
 
 ### Product and visual behavior
 
-- [ ] Demo communicates the product with many fictional subscriptions and no setup.
-- [ ] All catalog entries remain discoverable; tracking is independent of backend enablement.
-- [ ] Bulk tracking includes all classified subscription sources, with active probes excluded.
-- [ ] 24 tracked subscriptions and a 106-provider (107-selectable) mixed stress collection are navigable.
-- [ ] The same source remains selected through refresh, filtering, sorting, and resizing where it remains in scope.
-- [ ] Overview, Details, History, picker, help, and failure screens meet [tui.md](tui.md).
-- [ ] Green, Blue, Amber, and Monokai render in light and dark; monochrome keeps
+- [x] Demo communicates the product with many fictional subscriptions and no setup.
+- [x] All catalog entries remain discoverable; tracking is independent of backend enablement.
+- [x] Bulk tracking includes all classified subscription sources, with active probes excluded.
+- [x] 24 tracked subscriptions and a 106-provider mixed stress collection are navigable.
+- [x] The same source remains selected through refresh, filtering, sorting, and resizing where it remains in scope.
+- [x] Overview, Details, History, picker, help, and failure screens meet [tui.md](tui.md).
+- [x] Green, Blue, Amber, and Monokai render in light and dark; monochrome keeps
   every state cue without color.
-- [ ] All ordinary operations are accessible by keyboard and explained in context.
+- [x] All ordinary operations are accessible by keyboard and explained in context.
 
 ### Contract and correctness
 
-- [ ] Fixtures cover quota, credit, money, model/grouped windows, generic details, and optional history.
-- [ ] Missing, null, zero, exhausted, over-limit, stale, and partial values remain distinguishable.
-- [ ] Per-provider failures and valid partial results survive mixed success/nonzero exits.
-- [ ] Additional fields are tolerated; malformed/oversized payloads and incompatible shapes are visible.
-- [ ] Sample timestamps remain distinct from command receipt times and local countdown updates.
-- [ ] Account/source changes cannot inherit old readings or late worker results.
-- [ ] Unknown provider names/labels and Unicode/control sequences cannot break layout or inject terminal commands.
-- [ ] No backend command, credential access, or session scan occurs in demo mode.
-- [ ] Cancellation, timeout, and quit clean up owned work and restore the terminal.
+- [x] Fixtures cover quota, credit, money, model/grouped windows, generic details, and optional history.
+- [x] Missing, null, zero, exhausted, over-limit, stale, and partial values remain distinguishable.
+- [x] Per-provider failures and valid partial results survive mixed success/nonzero exits.
+- [x] Additional fields are tolerated; malformed/oversized payloads and incompatible shapes are visible.
+- [x] Sample timestamps remain distinct from command receipt times and local countdown updates.
+- [x] Account/source changes cannot inherit old readings or late worker results.
+- [x] Unknown provider names/labels and Unicode/control sequences cannot break layout or inject terminal commands.
+- [x] No backend command, credential access, or session scan occurs in demo mode.
+- [x] Cancellation, timeout, and quit clean up owned work and restore the terminal.
 
 ### Provider evidence
 
-- [ ] Claude and Codex include reported extra windows and supported local history.
-- [ ] Muse handles omitted windows and token-only history without invented dollars.
-- [ ] Gemini app, Gemini CLI, and Antigravity remain distinct sources with honest setup conditions.
-- [ ] Additional subscription providers work through shared components, including unfamiliar provider IDs.
-- [ ] Account-specific live checks are recorded separately from catalog and fixture coverage.
+- [ ] Open/unavailable: Claude and Codex reported extra windows and supported
+  local history require a live CodexBar executable and credentials.
+- [ ] Open/unavailable: Muse omitted windows and token-only live history require
+  live credentials.
+- [ ] Open/unavailable: Gemini app, Gemini CLI, and Antigravity live setup
+  conditions require live credentials.
+- [ ] Open/unavailable: additional subscription providers require an installed
+  backend and credentials.
+- [ ] Open/unavailable: account-specific live checks are recorded separately
+  from catalog and fixture coverage in
+  [live-validation.md](../evidence/live-validation.md); no live account check was
+  possible in this environment.
 
-No real usage or authentication request was made while preparing this spec.
-Current evidence is limited to the installed executable's version, catalog/help,
-and upstream documentation/source inspection. These acceptance boxes are future
-work, not completed checks.
 
 ## 11. Sources and maintenance
 

@@ -1,0 +1,169 @@
+Quotary Phase 9 verification
+date: 2026-10-20T05:52:07Z
+
+$ NO_COLOR=1 make check
+go vet ./...
+go tool github.com/golangci/golangci-lint/v2/cmd/golangci-lint run
+0 issues.
+go run ./internal/tools/docscheck .
+docs-check: ok
+go test ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+ok  	github.com/juanrubio/quotary/internal/catalog	(cached)
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+ok  	github.com/juanrubio/quotary/internal/live	(cached)
+ok  	github.com/juanrubio/quotary/internal/refresh	(cached)
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	28.746s
+
+$ make race
+go test -race ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+ok  	github.com/juanrubio/quotary/internal/catalog	(cached)
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+ok  	github.com/juanrubio/quotary/internal/live	(cached)
+ok  	github.com/juanrubio/quotary/internal/refresh	(cached)
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	192.058s
+
+$ go test ./internal/tui -run "TestFirstPaintBudget|TestLiveFirstPaintBudgetDespiteSlowDiscovery" -count=1 -v
+=== RUN   TestLiveFirstPaintBudgetDespiteSlowDiscovery
+--- PASS: TestLiveFirstPaintBudgetDespiteSlowDiscovery (0.00s)
+=== RUN   TestFirstPaintBudget
+    performance_test.go:22: demo first paint average: 19.417737ms over 20 iterations
+--- PASS: TestFirstPaintBudget (0.39s)
+PASS
+ok  	github.com/juanrubio/quotary/internal/tui	0.440s
+
+$ go test ./internal/tui -run "TestStoredSceneCapturesMatch|TestEvidenceCaptureMatrixMatchesGoldens|TestGoldenMatrix" -count=1
+ok  	github.com/juanrubio/quotary/internal/tui	0.634s
+
+$ ./scripts/terminal-check.sh
+Quotary terminal restoration check
+date: 2026-10-20T05:51:52Z
+terminal: tmux PTY 80x24 TERM=xterm-256color for q/Ctrl+C/hanging-backend; script PTY for SIGTERM
+quit-q: OK
+--- quit-q before quit ---
+  QUOTARY                                                DEMO · fictional data
+  24 sources · 24 current · 2 attention    Scenario: subscription · 2026-10-16T…
+  ────────────────────────────────────────────────────────────────────────────
+  [Overview]   Details   History   [All]   Pinned
+  Source                Allowance Left            Resets      State
+> Claude Code           5h        72%             2h 14m      Current
+                        Weekly    38%             3d 05h
+  Codex                 5h        84%             3h 08m      Current
+  Muse Code             5h        63%             1h 46m      Current
+  Google · Gemini app   5h        92%             4h 12m      Current
+  Google · Antigravity  5h        18%             56m         Low
+  Cursor                Plan      56%             12d         Current
+  GitHub Copilot        Plan      81%             15d         Current
+  Windsurf              Plan      44%             11d         Current
+  Kimi Code             Plan      33%             —           Current
+  Google · Gemini CLI   Daily     78%             8h 10m      Current
+  Kiro                  Plan      68%             13d         Current
+  JetBrains AI          Plan      73%             10d         Current
+  Augment               Plan      47%             6d          Current
+  ClinePass             Plan      77%             14d         Current
+
+  Claude Code · Max · Current · 34s ago
+  ────────────────────────────────────────────────────────────────────────────
+  ↑↓ Move  Enter Details  / Search  p Sources  ? Help  q Quit          1–14 / 24
+--- quit-q after quit ---
+QUOTARY_EXIT=0
+QUOTARY_STTY_RESTORED=1
+quit-ctrl-c: OK
+--- quit-ctrl-c before quit ---
+  QUOTARY                                                DEMO · fictional data
+  24 sources · 24 current · 2 attention    Scenario: subscription · 2026-10-16T…
+  ────────────────────────────────────────────────────────────────────────────
+  [Overview]   Details   History   [All]   Pinned
+  Source                Allowance Left            Resets      State
+> Claude Code           5h        72%             2h 14m      Current
+                        Weekly    38%             3d 05h
+  Codex                 5h        84%             3h 08m      Current
+  Muse Code             5h        63%             1h 46m      Current
+  Google · Gemini app   5h        92%             4h 12m      Current
+  Google · Antigravity  5h        18%             56m         Low
+  Cursor                Plan      56%             12d         Current
+  GitHub Copilot        Plan      81%             15d         Current
+  Windsurf              Plan      44%             11d         Current
+  Kimi Code             Plan      33%             —           Current
+  Google · Gemini CLI   Daily     78%             8h 10m      Current
+  Kiro                  Plan      68%             13d         Current
+  JetBrains AI          Plan      73%             10d         Current
+  Augment               Plan      47%             6d          Current
+  ClinePass             Plan      77%             14d         Current
+
+  Claude Code · Max · Current · 34s ago
+  ────────────────────────────────────────────────────────────────────────────
+  ↑↓ Move  Enter Details  / Search  p Sources  ? Help  q Quit          1–14 / 24
+--- quit-ctrl-c after quit ---
+QUOTARY_EXIT=0
+QUOTARY_STTY_RESTORED=1
+quit-sigterm: OK
+[?2026$p[?2027$p]11;?[>4m[=0;1u[?1049h[?25l[?2004h[>4;2m[=1;1u[?u[H[2J[>4m[=0;1u[H[?1049l[?25h[?2004lQUOTARY_EXIT=0
+QUOTARY_STTY_RESTORED=1
+quit-hanging-backend: OK
+QUOTARY_EXIT=0
+QUOTARY_STTY_RESTORED=1
+
+$ go test ./internal/tui -run ^$ -fuzz FuzzWrapTextNeverPanicsOrOverflows -fuzztime=5s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/182 completed
+fuzz: elapsed: 1s, gathering baseline coverage: 182/182 completed, now fuzzing with 8 workers
+fuzz: elapsed: 3s, execs: 33681 (11226/sec), new interesting: 3 (total: 185)
+fuzz: elapsed: 6s, execs: 45043 (3787/sec), new interesting: 3 (total: 185)
+fuzz: elapsed: 6s, execs: 45043 (0/sec), new interesting: 3 (total: 185)
+PASS
+ok  	github.com/juanrubio/quotary/internal/tui	6.237s
+
+$ go test ./internal/backend/codexbar -run ^$ -fuzz FuzzNormalizeUsageNeverPanics -fuzztime=5s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/381 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 381/381 completed, now fuzzing with 8 workers
+fuzz: elapsed: 3s, execs: 65369 (21783/sec), new interesting: 7 (total: 388)
+fuzz: elapsed: 6s, execs: 107905 (14178/sec), new interesting: 9 (total: 390)
+fuzz: elapsed: 6s, execs: 107905 (0/sec), new interesting: 9 (total: 390)
+PASS
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	6.048s
+
+captures:
+15
+matrix captures:
+22
+goldens:
+22
+
+versions:
+Go version:
+go version go1.27.2 linux/amd64
+
+Pinned modules:
+charm.land/bubbletea/v2 v2.0.2
+charm.land/lipgloss/v2 v2.0.6
+github.com/charmbracelet/colorprofile v0.4.3
+github.com/charmbracelet/x/exp/teatest/v2 v2.0.0-20261012121918-43427fdbad12
+github.com/golangci/asciicheck v0.5.0
+github.com/golangci/canonicalheader v0.0.0-20260928145534-e18e5c5a078f
+github.com/golangci/dupl v0.0.0-20260401084720-c99c5cf5c202
+github.com/golangci/go-printf-func-name v0.1.1
+github.com/golangci/gofmt v0.0.0-20260820135601-e84e05053792
+github.com/golangci/golangci-lint/v2 v2.15.0
+github.com/golangci/golines v0.16.0
+github.com/golangci/misspell v0.8.0
+github.com/golangci/plugin-module-register v0.1.2
+github.com/golangci/revgrep v0.8.0
+github.com/golangci/rowserrcheck v0.0.0-20261005233414-e0740d52dee8
+github.com/golangci/swaggoswag v0.0.0-20250504205917-77f2aca3143e
+github.com/golangci/unconvert v0.0.0-20250410112200-a129a6e6413e
+github.com/spf13/cobra v1.10.2

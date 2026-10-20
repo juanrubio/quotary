@@ -142,6 +142,7 @@ type model struct {
 	liveEvents     <-chan struct{}
 	setupError     string
 	backendVersion string
+	lastWarning    string
 	location       *time.Location
 	light          bool
 	noColor        bool
@@ -194,6 +195,7 @@ func newModel(opts Options) *model {
 	}
 	if warning, ok := opts.Session.(warningSession); ok {
 		m.status = cleanText(warning.ConfigWarning())
+		m.lastWarning = m.status
 	}
 	m.load()
 	m.applyTheme()
@@ -408,6 +410,16 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.light = isLight(msg.Color)
 		m.applyTheme()
 	case liveUpdateMsg:
+		if versioned, ok := m.session.(versionedSession); ok {
+			m.backendVersion = versioned.BackendVersion()
+		}
+		if warning, ok := m.session.(warningSession); ok {
+			text := cleanText(warning.ConfigWarning())
+			if text != "" && text != m.lastWarning {
+				m.status = text
+				m.lastWarning = text
+			}
+		}
 		m.load()
 		if m.historyVisible() {
 			m.loadHistoryForce(false)

@@ -1,12 +1,14 @@
 # Quotary — visual and interaction specification
 
-Status: proposed design. The text screens below are fictional wireframes, not
-captures of an implemented application. Product and data contract: [product.md](product.md).
+Status: implemented design. The text screens below are fictional wireframes; the
+Go TUI implementation and its captures are under `internal/tui` and
+`docs/evidence/captures/`. Product and data contract: [product.md](product.md).
 
 Rendered references are available in the [interactive mockups](../mockups/index.html).
 The [implementer guide](../mockups/README.md) links 15 exported screens, exact
 cell layouts, fictional fixtures, and reproduction instructions. These browser
-references illustrate the design; actual Go TUI acceptance is still required.
+references illustrate the design; the Go TUI acceptance matrix is recorded through
+`TestGoldenMatrix` and the terminal-restoration evidence.
 
 ## 1. Experience
 

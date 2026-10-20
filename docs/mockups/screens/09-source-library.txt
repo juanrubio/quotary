@@ -1,7 +1,7 @@
                                                                                                                         
   QUOTARY    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
                                                                                                                         
-  Source library · 106 providers · 107 selectable sources                                                               
+  Source library · 106 providers · 108 selectable sources                                                               
   ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
                                                                                                                         
   Track the subscriptions you use.                                                                          24 tracked  
@@ -36,5 +36,5 @@
   API, credits and unclassified sources stay separate from subscriptions.                                               
   Catalog availability does not confirm an active subscription.                                                         
   ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
-  ↑↓ Move   Space Track   a Track subscriptions   / Search   Esc Back   ? Help                                1–20/107  
+  ↑↓ Move   Space Track   a Track subscriptions   / Search   Esc Back   ? Help                                1–20/108  
                                                                                                                         

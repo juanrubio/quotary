@@ -11,9 +11,10 @@ into a polished, keyboard driven interface.
 
 *Fictional design reference. No application or provider reading is shown here.*
 
-**Project status:** early implementation. The Go module, CLI shell, and
-documentation layout exist; product behavior remains in progress against the
-specifications and implementation plan.
+**Project status:** usable prototype. The offline demo, live CodexBar adapter,
+scheduler, catalog manifest, versioned preferences, and responsive TUI are
+implemented. Live provider validation remains open until a pinned CodexBar
+executable and real credentials are available.
 
 ## Preview the design
 
@@ -89,9 +90,32 @@ docs/reference/                   Pinned public provider catalog snapshot
 docs/evidence/                    Reviews, live checks, captures, measurements
 ```
 
-Build and run the demo with `make build` and `./quotary --demo`. Product
-acceptance remains open work in `docs/specs/product.md` and
-`docs/specs/tui.md`.
+## Build, run, and setup
+
+```sh
+make build
+./quotary --demo          # offline fictional demonstration
+./quotary                 # live CodexBar mode
+```
+
+Demo mode never invokes CodexBar, reads provider credentials, or touches the
+network. Live mode resolves the executable in this order:
+`QUOTARY_CODEXBAR_PATH`, the configured backend path, then `codexbar` on `PATH`.
+Download CodexBar CLI v0.77.0 from
+<https://github.com/steipete/CodexBar/releases/tag/v0.77.0>, unpack the release
+archive, and keep the `codexbar` executable beside its resource bundle. Add the
+executable to `PATH` or set `QUOTARY_CODEXBAR_PATH` to its absolute path. Configure
+provider credentials through CodexBar itself; Quotary never copies credentials.
+
+Preferences live at `$XDG_CONFIG_HOME/quotary/config.json` (falling back to
+`~/.config/quotary/config.json`); `QUOTARY_CONFIG_PATH` is a diagnostic/test
+override. Preferences are versioned and written atomically. A configured backend
+config path is passed to the child only as `CODEXBAR_CONFIG`.
+
+Press `p` to track sources, `?` for the keyboard guide, `,` for settings, and
+`q` to quit. Live validation limits and unavailable-credential records are in
+`docs/evidence/live-validation.md`. Product acceptance details remain in
+`docs/specs/product.md` and `docs/specs/tui.md`.
 
 ## License
 

@@ -125,6 +125,14 @@ func splitWidth(value string, width int) []string {
 	current := ""
 	for _, r := range value {
 		cell := string(r)
+		if ansi.StringWidth(cell) > width {
+			if current != "" {
+				chunks = append(chunks, current)
+				current = ""
+			}
+			chunks = append(chunks, "?")
+			continue
+		}
 		if ansi.StringWidth(current)+ansi.StringWidth(cell) > width {
 			chunks = append(chunks, current)
 			current = ""

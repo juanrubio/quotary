@@ -3,6 +3,7 @@ package tui
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"charm.land/lipgloss/v2"
@@ -95,4 +96,52 @@ func itoa(value int) string {
 		value /= 10
 	}
 	return string(digits[index:])
+}
+
+func TestEvidenceCaptureMatrixMatchesGoldens(t *testing.T) {
+	goldenDir := filepath.Join("testdata", "golden")
+	evidenceDir := filepath.Join("..", "..", "docs", "evidence", "captures", "matrix")
+	entries, err := os.ReadDir(goldenDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := 0
+	seen := map[string]bool{}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".ansi") {
+			continue
+		}
+		seen[entry.Name()] = true
+		want, err := os.ReadFile(filepath.Join(goldenDir, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := os.ReadFile(filepath.Join(evidenceDir, entry.Name()))
+		if err != nil {
+			t.Fatalf("missing evidence capture %s: %v", entry.Name(), err)
+		}
+		if string(want) != string(got) {
+			t.Fatalf("evidence capture drift: %s", entry.Name())
+		}
+		count++
+	}
+	if count != 22 {
+		t.Fatalf("matrix capture count=%d, want 22", count)
+	}
+	evidenceEntries, err := os.ReadDir(evidenceDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	extra := 0
+	for _, entry := range evidenceEntries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".ansi") {
+			continue
+		}
+		if !seen[entry.Name()] {
+			extra++
+		}
+	}
+	if extra != 0 {
+		t.Fatalf("evidence matrix has %d extra captures", extra)
+	}
 }

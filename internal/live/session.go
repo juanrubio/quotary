@@ -23,11 +23,18 @@ type Options struct {
 	Store        config.Store
 	Interval     func() time.Duration
 	StoreWarning string
+	Now          func() time.Time
+	HistoryTTL   time.Duration
 }
 
 type historyFailure struct {
 	err error
 	at  time.Time
+}
+
+type historyPartial struct {
+	history  domain.HistorySnapshot
+	loadedAt time.Time
 }
 
 // Session implements tui.Session using the refresh scheduler.
@@ -41,24 +48,27 @@ type Session struct {
 	scheduler *refresh.Scheduler
 	interval  func() time.Duration
 
-	mu             sync.RWMutex
-	prefs          config.Preferences
-	catalog        backend.CatalogSnapshot
-	snapshots      map[string]domain.UsageSnapshot
-	done           map[string]bool
-	events         chan struct{}
-	eventsClosed   bool
-	bulkID         string
-	bulkKeys       map[string]bool
-	bulkDone       int
-	bulkTotal      int
-	bulkSeq        int
-	priorities     map[string]int
-	historyErrors  map[string]historyFailure
-	historyLoading map[string]bool
-	storeWarning   string
-	backendErr     string
-	backendVersion string
+	mu              sync.RWMutex
+	prefs           config.Preferences
+	catalog         backend.CatalogSnapshot
+	snapshots       map[string]domain.UsageSnapshot
+	done            map[string]bool
+	events          chan struct{}
+	eventsClosed    bool
+	bulkID          string
+	bulkKeys        map[string]bool
+	bulkDone        int
+	bulkTotal       int
+	bulkSeq         int
+	priorities      map[string]int
+	historyErrors   map[string]historyFailure
+	historyPartials map[string]historyPartial
+	historyLoading  map[string]bool
+	now             func() time.Time
+	historyTTL      time.Duration
+	storeWarning    string
+	backendErr      string
+	backendVersion  string
 }
 
 // New builds a live session and starts background refresh work.
@@ -68,22 +78,33 @@ func New(parent context.Context, opts Options) (*Session, error) {
 	}
 	ctx, cancel := context.WithCancel(parent)
 	s := &Session{
-		ctx:            ctx,
-		cancel:         cancel,
-		backend:        opts.Backend,
-		store:          opts.Store,
-		prefs:          config.Normalize(opts.Store.Load()),
-		snapshots:      map[string]domain.UsageSnapshot{},
-		done:           map[string]bool{},
-		events:         make(chan struct{}, 1),
-		historyErrors:  map[string]historyFailure{},
-		historyLoading: map[string]bool{},
-		bulkKeys:       map[string]bool{},
-		priorities:     map[string]int{},
-		storeWarning:   opts.StoreWarning,
+		ctx:             ctx,
+		cancel:          cancel,
+		backend:         opts.Backend,
+		store:           opts.Store,
+		prefs:           config.Normalize(opts.Store.Load()),
+		snapshots:       map[string]domain.UsageSnapshot{},
+		done:            map[string]bool{},
+		events:          make(chan struct{}, 1),
+		historyErrors:   map[string]historyFailure{},
+		historyPartials: map[string]historyPartial{},
+		historyLoading:  map[string]bool{},
+		bulkKeys:        map[string]bool{},
+		priorities:      map[string]int{},
+		storeWarning:    opts.StoreWarning,
+	}
+	s.now = opts.Now
+	if s.now == nil {
+		s.now = func() time.Time { return time.Now() }
+	}
+	s.historyTTL = opts.HistoryTTL
+	if s.historyTTL <= 0 {
+		s.historyTTL = 15 * time.Minute
 	}
 	s.scheduler = refresh.New(opts.Backend, opts.Store, refresh.Options{
-		MaxJobs: 3,
+		MaxJobs:    3,
+		Now:        s.now,
+		HistoryTTL: s.historyTTL,
 		Tracked: func(key domain.SourceKey) bool {
 			s.mu.RLock()
 			defer s.mu.RUnlock()
@@ -95,50 +116,15 @@ func New(parent context.Context, opts Options) (*Session, error) {
 	s.wg.Add(1)
 	go s.consume(results)
 
-	rawCatalog, err := opts.Backend.Catalog(ctx)
-	if err != nil {
-		s.backendErr = safeError(err)
-	} else {
-		s.catalog = catalog.Apply(rawCatalog)
-		migrated := migrateGeminiTracked(s.prefs.Tracked)
-		migratedPins := migrateGeminiPins(s.prefs.Pins)
-		changed := !sameStrings(migrated, s.prefs.Tracked) || !sameStrings(migratedPins, s.prefs.Pins)
-		s.prefs.Tracked = migrated
-		s.prefs.Pins = migratedPins
-		firstRun := false
-		if provider, ok := opts.Store.(interface{ FirstRun() bool }); ok {
-			firstRun = provider.FirstRun()
-		}
-		if len(s.prefs.Tracked) == 0 && firstRun {
-			seeded := catalog.SeedTracked(s.catalog)
-			if len(seeded) > 0 {
-				s.prefs.Tracked = seeded
-				changed = true
-			}
-		}
-		if changed {
-			if saveErr := opts.Store.Save(s.prefs); saveErr != nil {
-				s.storeWarning = safeError(saveErr)
-			}
-		}
-	}
-	if version, versionErr := opts.Backend.Version(ctx); versionErr == nil {
-		s.backendVersion = version.Version
-	} else if s.backendErr == "" {
-		s.backendErr = safeError(versionErr)
-	}
 	for _, key := range s.prefs.Tracked {
 		parsed, parseErr := domain.ParseSourceKey(key)
-		if parseErr != nil || !s.tracked(parsed) {
+		if parseErr != nil {
 			continue
 		}
 		s.ensureSkeleton(parsed)
-		if s.autoPollAllowed(parsed) {
-			s.enqueueAutomatic(parsed, 0)
-		} else {
-			s.markAutoDisabled(parsed)
-		}
 	}
+	s.wg.Add(1)
+	go s.discover(opts.Store)
 	s.wg.Add(1)
 	go s.intervalLoop()
 	return s, nil
@@ -156,6 +142,105 @@ func (s *Session) Close() error {
 	s.wg.Wait()
 	s.scheduler.Wait()
 	return nil
+}
+
+func (s *Session) discover(store config.Store) {
+	defer s.wg.Done()
+	rawCatalog, err := s.backend.Catalog(s.ctx)
+	if err != nil {
+		if version, versionErr := s.backend.Version(s.ctx); versionErr == nil {
+			s.mu.Lock()
+			s.backendVersion = version.Version
+			s.mu.Unlock()
+		}
+		s.mu.Lock()
+		s.backendErr = safeError(err)
+		for key, snapshot := range s.snapshots {
+			if snapshot.State == domain.StatusQueued {
+				snapshot.State = domain.StatusBackendIncompatible
+				snapshot.Error = domain.NewScopedError(domain.ErrConfig, key, "Backend catalog unavailable")
+				if snapshot.ReceivedAt.IsZero() {
+					snapshot.ReceivedAt = s.now()
+				}
+				s.snapshots[key] = snapshot
+			}
+		}
+		s.signalEventLocked()
+		s.mu.Unlock()
+		return
+	}
+	applied := catalog.Apply(rawCatalog)
+	s.mu.Lock()
+	s.catalog = applied
+	migrated := migrateGeminiTracked(s.prefs.Tracked)
+	migratedPins := migrateGeminiPins(s.prefs.Pins)
+	changed := !sameStrings(migrated, s.prefs.Tracked) || !sameStrings(migratedPins, s.prefs.Pins)
+	s.prefs.Tracked = migrated
+	s.prefs.Pins = migratedPins
+	firstRun := false
+	if provider, ok := store.(interface{ FirstRun() bool }); ok {
+		firstRun = provider.FirstRun()
+	}
+	if len(s.prefs.Tracked) == 0 && firstRun {
+		seeded := catalog.SeedTracked(applied)
+		if len(seeded) > 0 {
+			s.prefs.Tracked = seeded
+			changed = true
+		}
+	}
+	if changed {
+		if saveErr := store.Save(s.prefs); saveErr != nil {
+			s.storeWarning = safeError(saveErr)
+		}
+	}
+	tracked := append([]string(nil), s.prefs.Tracked...)
+	for snapshotKey, snapshot := range s.snapshots {
+		keep := false
+		for _, trackedKey := range tracked {
+			if parsed, parseErr := domain.ParseSourceKey(trackedKey); parseErr == nil && trackMatches(parsed, snapshot.Key) {
+				keep = true
+				break
+			}
+		}
+		if !keep {
+			delete(s.snapshots, snapshotKey)
+		}
+	}
+	s.signalEventLocked()
+	s.mu.Unlock()
+	var enqueue []domain.SourceKey
+	var blocked []domain.SourceKey
+	for _, key := range tracked {
+		parsed, parseErr := domain.ParseSourceKey(key)
+		if parseErr != nil {
+			continue
+		}
+		s.ensureSkeleton(parsed)
+		if s.autoPollAllowed(parsed) {
+			enqueue = append(enqueue, parsed)
+		} else {
+			blocked = append(blocked, parsed)
+		}
+	}
+	for _, key := range enqueue {
+		s.enqueueAutomatic(key, 0)
+	}
+	for _, key := range blocked {
+		s.markAutoDisabled(key)
+	}
+	if version, versionErr := s.backend.Version(s.ctx); versionErr == nil {
+		s.mu.Lock()
+		s.backendVersion = version.Version
+		s.signalEventLocked()
+		s.mu.Unlock()
+	} else {
+		s.mu.Lock()
+		if s.backendErr == "" {
+			s.backendErr = safeError(versionErr)
+		}
+		s.signalEventLocked()
+		s.mu.Unlock()
+	}
 }
 
 func (s *Session) consume(results <-chan refresh.Result) {
@@ -319,6 +404,9 @@ func (s *Session) markAutoDisabled(key domain.SourceKey) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	snapshot := s.snapshots[key.String()]
+	if snapshot.State != domain.StatusQueued && !snapshot.ReceivedAt.IsZero() {
+		return
+	}
 	snapshot.Key = key
 	snapshot.ProviderID = key.Provider
 	if snapshot.DisplayName == "" {
@@ -501,12 +589,6 @@ func (s *Session) displayNameLocked(key domain.SourceKey) string {
 	return key.Provider
 }
 
-func (s *Session) tracked(key domain.SourceKey) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return contains(s.prefs.Tracked, key.String())
-}
-
 func contains(values []string, target string) bool {
 	for _, value := range values {
 		if value == target {
@@ -665,13 +747,25 @@ func (s *Session) AllSnapshots(ctx context.Context) []domain.UsageSnapshot {
 }
 
 // BackendError reports startup discovery failures.
-func (s *Session) BackendError() string { return s.backendErr }
+func (s *Session) BackendError() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.backendErr
+}
 
 // BackendVersion reports the detected CodexBar version.
-func (s *Session) BackendVersion() string { return s.backendVersion }
+func (s *Session) BackendVersion() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.backendVersion
+}
 
 // ConfigWarning reports a migration/corruption/newer-schema setup message.
-func (s *Session) ConfigWarning() string { return s.storeWarning }
+func (s *Session) ConfigWarning() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.storeWarning
+}
 
 // Query returns the current search query (managed by the TUI).
 func (s *Session) Query() string { return "" }
@@ -762,15 +856,19 @@ func (s *Session) HistoryWithForce(ctx context.Context, req backend.HistoryReque
 	}
 	request := refresh.Request{Key: key, Operation: refresh.OpHistory, Days: req.Days, Context: "live", Manual: force}
 	cacheKey := key.String() + "|" + itoa(req.Days)
-	now := time.Now()
+	now := s.now()
 	cached, hasCached := s.scheduler.CachedHistory(request)
 	if hasCached && !force {
 		return cached, nil
 	}
 	s.mu.RLock()
+	partial, hasPartial := s.historyPartials[cacheKey]
 	failure, hasFailure := s.historyErrors[cacheKey]
 	loading := s.historyLoading[cacheKey]
 	s.mu.RUnlock()
+	if hasPartial && !force && now.Sub(partial.loadedAt) < s.historyTTL {
+		return partial.history, nil
+	}
 	if hasFailure && now.Sub(failure.at) < s.scheduler.Interval() && !force {
 		if hasCached {
 			return cached, nil
@@ -798,9 +896,14 @@ func (s *Session) HistoryWithForce(ctx context.Context, req backend.HistoryReque
 		history, loadErr := s.scheduler.LoadHistory(s.ctx, request, force)
 		s.mu.Lock()
 		if loadErr != nil {
-			s.historyErrors[cacheKey] = historyFailure{err: loadErr, at: time.Now()}
+			if len(history.Buckets) > 0 || history.TotalTokens != nil || history.Cost != nil || len(history.Models) > 0 {
+				s.historyPartials[cacheKey] = historyPartial{history: history, loadedAt: s.now()}
+			} else {
+				s.historyErrors[cacheKey] = historyFailure{err: loadErr, at: s.now()}
+			}
 		} else {
 			delete(s.historyErrors, cacheKey)
+			delete(s.historyPartials, cacheKey)
 		}
 		delete(s.historyLoading, cacheKey)
 		s.signalEventLocked()
@@ -871,6 +974,11 @@ func (s *Session) SavePreferences(prefs config.Preferences) error {
 			for cacheKey := range s.historyErrors {
 				if strings.HasPrefix(cacheKey, key+"|") {
 					delete(s.historyErrors, cacheKey)
+				}
+			}
+			for cacheKey := range s.historyPartials {
+				if strings.HasPrefix(cacheKey, key+"|") {
+					delete(s.historyPartials, cacheKey)
 				}
 			}
 		}

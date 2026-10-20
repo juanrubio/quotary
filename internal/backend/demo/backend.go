@@ -84,8 +84,8 @@ func (b *Backend) Catalog(context.Context) (backend.CatalogSnapshot, error) {
 		variants := []domain.Variant{domain.VariantConfigured}
 		names := []string{entry.DisplayName}
 		if entry.Provider == "gemini" {
-			variants = []domain.Variant{domain.VariantWeb, domain.VariantAPI}
-			names = []string{"Google · Gemini app", "Google · Gemini CLI"}
+			variants = []domain.Variant{domain.VariantConfigured, domain.VariantWeb, domain.VariantAPI}
+			names = []string{"Google · Gemini (configured)", "Google · Gemini app", "Google · Gemini CLI"}
 		}
 		for i, variant := range variants {
 			key := domain.SourceKey{Provider: entry.Provider, Variant: variant, Account: domain.UnknownAccount, AccountUnknown: true}
@@ -193,7 +193,7 @@ func (b *Backend) variantsFor(provider string) []domain.Variant {
 			continue
 		}
 		if provider == "gemini" {
-			return []domain.Variant{domain.VariantWeb, domain.VariantAPI}
+			return []domain.Variant{domain.VariantConfigured, domain.VariantWeb, domain.VariantAPI}
 		}
 		return []domain.Variant{domain.VariantConfigured}
 	}

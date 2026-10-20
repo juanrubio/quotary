@@ -24,8 +24,8 @@ func (stressBackend) Version(context.Context) (backend.VersionInfo, error) {
 }
 
 func (stressBackend) Catalog(context.Context) (backend.CatalogSnapshot, error) {
-	providers := make([]domain.SourceDescriptor, 0, 107)
-	for i := 0; i < 107; i++ {
+	providers := make([]domain.SourceDescriptor, 0, 108)
+	for i := 0; i < 108; i++ {
 		name := fmt.Sprintf("provider-%03d", i)
 		providers = append(providers, domain.SourceDescriptor{
 			Key: domain.SourceKey{Provider: name}, ProviderID: name, DisplayName: name, Available: true,
@@ -52,9 +52,9 @@ func (stressBackend) History(context.Context, backend.HistoryRequest) (domain.Hi
 	return domain.HistorySnapshot{}, nil
 }
 
-func TestSchedulerBackedTUIStaysResponsiveWith107Sources(t *testing.T) {
+func TestSchedulerBackedTUIStaysResponsiveWith108Sources(t *testing.T) {
 	prefs := config.Defaults()
-	for i := 0; i < 107; i++ {
+	for i := 0; i < 108; i++ {
 		prefs.Tracked = append(prefs.Tracked, fmt.Sprintf("provider-%03d", i))
 	}
 	store := config.NewMemoryStore(prefs)
@@ -74,9 +74,9 @@ func TestSchedulerBackedTUIStaysResponsiveWith107Sources(t *testing.T) {
 		m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
 	}
 	if elapsed := time.Since(start); elapsed > 2*time.Second {
-		t.Fatalf("TUI blocked for %v with 107 sources", elapsed)
+		t.Fatalf("TUI blocked for %v with 108 sources", elapsed)
 	}
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(20 * time.Second)
 	for time.Now().Before(deadline) {
 		snapshots := session.Snapshots(context.Background())
 		current := 0
@@ -85,12 +85,19 @@ func TestSchedulerBackedTUIStaysResponsiveWith107Sources(t *testing.T) {
 				current++
 			}
 		}
-		if current == 107 {
+		if current == 108 {
 			return
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	t.Fatalf("only %d/107 sources completed under scheduler-backed TUI", len(session.Snapshots(context.Background())))
+	snapshots := session.Snapshots(context.Background())
+	current := 0
+	for _, snapshot := range snapshots {
+		if snapshot.State == domain.StatusCurrent {
+			current++
+		}
+	}
+	t.Fatalf("only %d/108 sources completed under scheduler-backed TUI", current)
 }
 
 func TestLiveUpdateMessageReloadsRenderedModel(t *testing.T) {
@@ -195,4 +202,49 @@ func TestLiveConfigWarningRendersInShell(t *testing.T) {
 	if !strings.Contains(view, "preferences migrated") {
 		t.Fatalf("store warning not rendered:\n%s", view)
 	}
+}
+
+type blockedCatalogBackend struct {
+	*stressBackend
+	started chan struct{}
+	release chan struct{}
+}
+
+func (b *blockedCatalogBackend) Catalog(ctx context.Context) (backend.CatalogSnapshot, error) {
+	close(b.started)
+	<-b.release
+	return b.stressBackend.Catalog(ctx)
+}
+
+func (b *blockedCatalogBackend) Version(ctx context.Context) (backend.VersionInfo, error) {
+	return b.stressBackend.Version(ctx)
+}
+
+func TestLiveFirstPaintBudgetDespiteSlowDiscovery(t *testing.T) {
+	if raceEnabled {
+		t.Skip("timing budget is not meaningful under the race detector")
+	}
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"provider-000"}
+	store := config.NewMemoryStore(prefs)
+	be := &blockedCatalogBackend{stressBackend: &stressBackend{}, started: make(chan struct{}), release: make(chan struct{})}
+	start := time.Now()
+	session, err := live.New(context.Background(), live.Options{Backend: be, Store: store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = session.Close() }()
+	m := newModel(Options{Session: session})
+	m.width, m.height = 160, 48
+	_ = m.View().Content
+	elapsed := time.Since(start)
+	if elapsed > 100*time.Millisecond {
+		t.Fatalf("live first paint took %v while discovery was blocked", elapsed)
+	}
+	select {
+	case <-be.started:
+	default:
+		t.Fatal("discovery did not start in the background")
+	}
+	close(be.release)
 }

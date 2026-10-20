@@ -237,7 +237,7 @@ or adapter DTO imports; seams are usable by demo and live backends.
 - Implement the demo backend behind `backend.Backend` with the in-memory config
   store and injected exec/filesystem seams.
 - Port fixtures, keep the fixed demo clock, add the parity check, and build the
-  subscription desk, attention, full-catalog (106 IDs, 107 selectable sources),
+  subscription desk, attention, full-catalog (106 IDs, 108 selectable sources),
   and empty/setup scenarios.
 - Add the demo catalog index used by the picker.
 - Exit gate: offline demo, deterministic scenarios, zero real subprocess/config/
@@ -300,7 +300,7 @@ raw stderr never becomes product copy.
   refresh rules, local countdowns, cancellation, terminal restoration, and bulk
   progress.
 - Read interval/minimum from `config.Store` and apply changes without restart.
-- Exit gate: 107-source stress stays responsive; no duplicate in-flight work; no
+- Exit gate: 108-source stress stays responsive; no duplicate in-flight work; no
   late result overwrites a changed context.
 
 Review focus: deduplication is by canonical source key; auth failures do not

@@ -5,7 +5,8 @@ account, or network connection is required. Start with the **Subscription desk**
 at **160×48**, then inspect **120×40** and **80×24**. Page Down shows the rest of
 the collection. The controls above the terminal switch screens, sizes, and themes.
 
-These are implementation references, not captures of a running Go application.
+These are implementation references. The Go TUI implementation exists and is
+captured separately under `docs/evidence/captures/` and `internal/tui/testdata/golden/`.
 All usage, plans, entitlements, freshness, capabilities, and history are fictional.
 The source library uses the real names and IDs in the pinned public
 [CodexBar catalog](../reference/codexbar-0.77.0-providers.json); those entries do not
@@ -102,8 +103,8 @@ metrics, model suggestions, or aggregate totals just to match two-window cards.
 - Do not sum percentages across providers or across Google sources. Gemini app,
   Gemini CLI, and Antigravity have separate identities and readings.
 - The reference catalog has 106 provider IDs. Replacing the generic Gemini entry
-  with its app and CLI variants produces 107 selectable sources. This is not a
-  count of 107 subscriptions. The live catalog must be discovered dynamically.
+  with its configured, app (`web`), and CLI (`api`) entries produces 108 selectable sources. This is not a
+  count of 108 subscriptions. The live catalog must be discovered dynamically.
 - Bulk subscription tracking applies to eligible subscription sources across
   the whole catalog, independent of the search text. API, credit, unclassified,
   and active-probe sources are not silently included.

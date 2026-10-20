@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/juanrubio/quotary/internal/backend"
 	"github.com/juanrubio/quotary/internal/config"
 	"github.com/juanrubio/quotary/internal/domain"
+	"github.com/juanrubio/quotary/internal/refresh"
 )
 
 type fakeBackend struct {
@@ -153,9 +155,7 @@ func TestLiveSessionBackendSetupError(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = s.Close() }()
-	if s.BackendError() == "" {
-		t.Fatal("catalog failure not surfaced")
-	}
+	waitFor(t, func() bool { return s.BackendError() != "" })
 	if _, err := New(context.Background(), Options{}); err == nil {
 		t.Fatal("missing backend accepted")
 	}
@@ -317,10 +317,11 @@ type blockingHistoryBackend struct {
 	*fakeBackend
 	started chan struct{}
 	release chan struct{}
+	once    sync.Once
 }
 
 func (b *blockingHistoryBackend) History(ctx context.Context, req backend.HistoryRequest) (domain.HistorySnapshot, error) {
-	close(b.started)
+	b.once.Do(func() { close(b.started) })
 	<-b.release
 	return b.fakeBackend.History(ctx, req)
 }
@@ -364,14 +365,23 @@ func TestLiveFailureSignalsEvents(t *testing.T) {
 	prefs.Tracked = []string{"codex"}
 	s := newLive(t, &authFailBackend{fakeBackend: &fakeBackend{}}, prefs)
 	defer func() { _ = s.Close() }()
+	waitFor(t, func() bool {
+		snapshots := s.Snapshots(context.Background())
+		return len(snapshots) == 1 && snapshots[0].Error != nil && snapshots[0].State != domain.StatusQueued
+	})
+	for {
+		select {
+		case <-s.Events():
+			continue
+		default:
+		}
+		break
+	}
+	s.StartRefresh("codex")
 	select {
 	case <-s.Events():
 	case <-time.After(2 * time.Second):
-		t.Fatal("failure did not signal event")
-	}
-	snapshots := s.Snapshots(context.Background())
-	if len(snapshots) != 1 || snapshots[0].Error == nil || snapshots[0].State == domain.StatusQueued {
-		t.Fatalf("failure state not applied: %+v", snapshots)
+		t.Fatal("failure did not signal Events")
 	}
 }
 
@@ -381,18 +391,16 @@ func TestLiveCallsVersionExactlyOnce(t *testing.T) {
 	prefs.Tracked = []string{"codex"}
 	s := newLive(t, be, prefs)
 	defer func() { _ = s.Close() }()
-	if be.versionCalls != 1 || s.BackendVersion() != "test" {
-		t.Fatalf("version calls=%d version=%q", be.versionCalls, s.BackendVersion())
-	}
+	waitFor(t, func() bool { return be.versionCalls.Load() == 1 && s.BackendVersion() == "test" })
 }
 
 type versionCountingBackend struct {
 	*fakeBackend
-	versionCalls int
+	versionCalls atomic.Int32
 }
 
 func (b *versionCountingBackend) Version(context.Context) (backend.VersionInfo, error) {
-	b.versionCalls++
+	b.versionCalls.Add(1)
 	return backend.VersionInfo{Version: "test"}, nil
 }
 
@@ -470,7 +478,13 @@ func TestLiveHistoryForceReloadsWithinTTL(t *testing.T) {
 	if _, err := s.HistoryWithForce(context.Background(), request, false); err != nil {
 		t.Fatal(err)
 	}
-	waitFor(t, func() bool { be.mu.Lock(); defer be.mu.Unlock(); return be.historyCalls == 1 })
+	waitFor(t, func() bool {
+		history, err := s.HistoryWithForce(context.Background(), request, false)
+		return err == nil && history.Key.Provider != ""
+	})
+	be.mu.Lock()
+	cachedCalls := be.historyCalls
+	be.mu.Unlock()
 	if _, err := s.HistoryWithForce(context.Background(), request, false); err != nil {
 		t.Fatal(err)
 	}
@@ -478,13 +492,13 @@ func TestLiveHistoryForceReloadsWithinTTL(t *testing.T) {
 	be.mu.Lock()
 	afterCache := be.historyCalls
 	be.mu.Unlock()
-	if afterCache != 1 {
-		t.Fatalf("cached history called backend %d times", afterCache)
+	if afterCache != cachedCalls {
+		t.Fatalf("cached history called backend %d times, want %d", afterCache, cachedCalls)
 	}
 	if _, err := s.HistoryWithForce(context.Background(), request, true); err != nil {
 		t.Fatal(err)
 	}
-	waitFor(t, func() bool { be.mu.Lock(); defer be.mu.Unlock(); return be.historyCalls == 2 })
+	waitFor(t, func() bool { be.mu.Lock(); defer be.mu.Unlock(); return be.historyCalls == cachedCalls+1 })
 }
 
 func TestLiveBulkProgressCompletesAfterUntrackingQueuedMember(t *testing.T) {
@@ -627,9 +641,13 @@ func TestLiveAppliesPartialSnapshotsWithError(t *testing.T) {
 	}
 }
 
-type partialHistoryBackend struct{ *fakeBackend }
+type partialHistoryBackend struct {
+	*fakeBackend
+	calls atomic.Int32
+}
 
 func (b *partialHistoryBackend) History(ctx context.Context, req backend.HistoryRequest) (domain.HistorySnapshot, error) {
+	b.calls.Add(1)
 	key, _ := domain.ParseSourceKey(req.SourceKey)
 	total := int64(10)
 	return domain.HistorySnapshot{Key: key, Days: req.Days, TotalTokens: &total, Partial: true},
@@ -639,16 +657,24 @@ func (b *partialHistoryBackend) History(ctx context.Context, req backend.History
 func TestLivePartialHistoryIsCached(t *testing.T) {
 	prefs := config.Defaults()
 	prefs.Tracked = []string{"codex"}
-	s := newLive(t, &partialHistoryBackend{fakeBackend: &fakeBackend{}}, prefs)
+	be := &partialHistoryBackend{fakeBackend: &fakeBackend{}}
+	s := newLive(t, be, prefs)
 	defer func() { _ = s.Close() }()
 	request := backend.HistoryRequest{ProviderID: "codex", SourceKey: "codex", Days: 7}
 	if _, err := s.HistoryWithForce(context.Background(), request, false); err != nil {
 		t.Fatal(err)
 	}
-	waitFor(t, func() bool {
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
 		history, err := s.HistoryWithForce(context.Background(), request, false)
-		return err == nil && history.TotalTokens != nil && history.Partial
-	})
+		if err == nil && history.TotalTokens != nil && history.Partial {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	history, err := s.HistoryWithForce(context.Background(), request, false)
+	cached, ok := s.scheduler.CachedHistoryAny(refresh.Request{Key: domain.SourceKey{Provider: "codex"}, Operation: refresh.OpHistory, Days: 7, Context: "live"})
+	t.Fatalf("partial history not cached: %+v err=%v cacheAny=%+v ok=%v loading=%v errors=%v", history, err, cached, ok, s.historyLoading, s.historyErrors)
 }
 
 type adapterShapedFailureBackend struct{ *fakeBackend }
@@ -692,6 +718,7 @@ func TestLiveFirstRunSeedsOnlyCompatibleEnabledSources(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = s.Close() }()
+	waitFor(t, func() bool { return len(s.Preferences().Tracked) > 0 })
 	prefs := s.Preferences()
 	if !contains(prefs.Tracked, "codex") || contains(prefs.Tracked, "openai") || !contains(prefs.Tracked, "gemini:configured") || contains(prefs.Tracked, "gemini:web") || contains(prefs.Tracked, "gemini:api") || contains(prefs.Tracked, "gemini") {
 		t.Fatalf("seeded tracked=%v", prefs.Tracked)
@@ -802,6 +829,7 @@ func TestLiveMigratesGenericGeminiTrackedKey(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		waitFor(t, func() bool { return !contains(s.Preferences().Tracked, "gemini") })
 		got := s.Preferences().Tracked
 		_ = s.Close()
 		if contains(got, "gemini") {
@@ -906,8 +934,42 @@ func TestLiveMigratesGenericGeminiPins(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = s.Close() }()
+	waitFor(t, func() bool { return !contains(s.Preferences().Pins, "gemini") })
 	pins := s.Preferences().Pins
 	if contains(pins, "gemini") || !contains(pins, "gemini:configured") {
 		t.Fatalf("pins=%v", pins)
 	}
+}
+
+func TestLivePartialHistoryExpiresAndReloads(t *testing.T) {
+	var ticks atomic.Int64
+	ticks.Store(time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC).UnixNano())
+	be := &partialHistoryBackend{fakeBackend: &fakeBackend{}}
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"codex"}
+	store := config.NewMemoryStore(prefs)
+	s, err := New(context.Background(), Options{
+		Backend:    be,
+		Store:      store,
+		Now:        func() time.Time { return time.Unix(0, ticks.Load()) },
+		HistoryTTL: time.Minute,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	request := backend.HistoryRequest{ProviderID: "codex", SourceKey: "codex", Days: 7}
+	if _, err := s.HistoryWithForce(context.Background(), request, false); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, func() bool {
+		history, loadErr := s.HistoryWithForce(context.Background(), request, false)
+		return loadErr == nil && history.TotalTokens != nil && history.Partial
+	})
+	before := be.calls.Load()
+	ticks.Add(int64(2 * time.Minute))
+	if _, err := s.HistoryWithForce(context.Background(), request, false); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, func() bool { return be.calls.Load() > before })
 }

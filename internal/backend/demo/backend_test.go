@@ -131,8 +131,8 @@ func TestCatalogIsBroadAndClassified(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Providers) != 107 {
-		t.Fatalf("catalog = %d, want 107 selectable sources", len(catalog.Providers))
+	if len(catalog.Providers) != 108 {
+		t.Fatalf("catalog = %d, want 108 selectable sources", len(catalog.Providers))
 	}
 	byKey := map[string]domain.SourceDescriptor{}
 	tracked := 0
@@ -211,7 +211,7 @@ func TestEmptyScenarioHasNoTrackedSources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Providers) != 107 {
+	if len(catalog.Providers) != 108 {
 		t.Fatalf("catalog = %d", len(catalog.Providers))
 	}
 	for _, descriptor := range catalog.Providers {

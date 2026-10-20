@@ -191,8 +191,9 @@ Tasks:
   - **Attention:** low, exhausted, missing window, token-only history, expired
     login, retained stale data, partial/unsupported detail.
   - **Full catalog:** the 106 reference catalog IDs with the generic `gemini`
-    entry replaced by `gemini:web` and `gemini:api`, producing 107 selectable
-    sources. Include non-subscription kinds honestly; this is not a count of 107
+    entry replaced by `gemini:configured`, `gemini:web`, and `gemini:api`, producing
+    108 selectable sources. Include non-subscription kinds honestly; this is not a
+    count of 108
     subscriptions. Demo kinds and capabilities are illustrative and must not be
     copied into the live manifest.
   - **Empty/setup:** no tracked sources, no results, unknown account, missing
@@ -388,7 +389,7 @@ Implement `internal/refresh/`:
 Tests: scheduler fairness, concurrency ceiling, deduplication, backoff, stale
 handling, generation drops, cancellation, and race-detector runs.
 
-Exit gate: the 107-source stress mode stays responsive while fetching; no
+Exit gate: the 108-source stress mode stays responsive while fetching; no
 duplicate in-flight work; no late result can overwrite a changed context.
 
 ### Phase 7 — Catalog capabilities, variants, and preferences
@@ -406,7 +407,7 @@ Tasks:
   entry in a review log under `docs/evidence/`.
 - Apply a written rubric per provider: one of subscription, credits, metered API,
   mixed, non-usage, or unknown; declared source variants; history support; safe
-  metering; and probe status. The baseline is 106 catalog IDs, or 107 selectable
+  metering; and probe status. The baseline is 106 catalog IDs, or 108 selectable
   sources after the Gemini variant split.
 - Default conservatively: unknown kind, capability, or probe status stays unknown
   and is neither bulk-trackable nor automatically polled. Unfamiliar providers
@@ -570,7 +571,7 @@ secrets.
 | TUI | Golden text grids at required sizes/themes; key-map tests; search focus behavior; resize; truncation; sanitization |
 | Safety | Injected demo seams make no subprocess/credential/network access; no secret-bearing diagnostics |
 | Import boundaries | `domain` and adapters do not import TUI/theme; `tui` does not import adapter DTOs |
-| Stress | 107 selectable sources, 24 tracked, rapid refresh/resize, race detector |
+| Stress | 108 selectable sources, 24 tracked, rapid refresh/resize, race detector |
 | Documentation | `make docs-check` resolves links and rejects duplicated root specs |
 
 Manual evidence complements tests: live provider checks and actual terminal
@@ -586,17 +587,17 @@ Phase 9 closes every row.
 
 | Mockup screen(s) | Primary phase | Verification |
 | --- | --- | --- |
-| 01–03, 15 · overview/cards | P3–P4 | Golden grids at 160×48/120×40/100×32 plus stored captures |
-| 04 · compact 80×24, 05 · small 60×20 | P3–P4 | Golden grids at 80×24/60×20 plus compact interaction tests |
-| 06 · attention | P2, P4 | Attention demo fixture plus state-transition tests |
-| 07 · details/allowances | P3 | Details golden plus grouped-window/balance coverage test |
-| 08 · history | P3 | History golden plus token-only, coverage, and pricing tests |
-| 09 · picker/library | P3–P4, P7 | Picker golden; demo catalog test; live classification/bulk test |
-| 10 · daylight | P3 | Light-palette golden and contrast test |
-| 11 · monochrome | P3 | Monochrome/NO_COLOR test and ASCII-gauge golden |
-| 12 · first launch | P3–P4, P7 | Empty/setup state test plus first-run tracking test |
-| 13 · backend missing | P3, P5 | Setup-state test plus executable-resolution test |
-| 14 · help | P3–P4 | Key-map and contextual-help test |
+| 01–03, 15 · overview/cards | P3–P4 | `TestGoldenMatrix`; `docs/evidence/captures/01-subscription-desk.ansi`, `02-overview.ansi`, `03-medium.ansi`, `15-more-subscriptions.ansi` |
+| 04 · compact 80×24, 05 · small 60×20 | P3–P4 | `TestGoldenMatrix`, compact interaction tests; `04-compact.ansi`, `05-small-terminal.ansi` |
+| 06 · attention | P2, P4 | `TestAttentionScenarioStates`, `TestDemoRefreshTransitionsVisible`; `06-attention.ansi` |
+| 07 · details/allowances | P3 | `TestDetailsShowRawAllowanceAlongsidePercent`, `TestLongBalanceRemainsAccessible`; `07-google-allowances.ansi` |
+| 08 · history | P3 | `TestHistoryMissingDayAndTokenOnly`, `TestHistoryPricingSemantics`; `08-muse-history.ansi` |
+| 09 · picker/library | P3–P4, P7 | `TestPickerAvailabilityVisibleAtBreakpoints`, `TestManifestCoversReferenceCatalog`; `09-source-library.ansi` |
+| 10 · daylight | P3 | `TestGoldenMatrix` green-light, `TestFourThemesLightDarkAndMonochrome`; `10-daylight.ansi` |
+| 11 · monochrome | P3 | `TestGoldenMatrix` mono cases, `TestNoColorEnvironmentDisablesColor`; `11-monochrome.ansi` |
+| 12 · first launch | P3–P4, P7 | `TestEmptyScenarioHasNoTrackedSources`, `TestLiveSeedingRequiresGenuineFirstRun`; `12-first-launch.ansi` |
+| 13 · backend missing | P3, P5 | `TestDemoSetupScenarioShowsBackendMissing`, `TestExecutableResolution`; refreshed `13-backend-missing.ansi` |
+| 14 · help | P3–P4 | `TestHelpPagesCoverEveryRenderedShortcut`; `14-keyboard-help.ansi` |
 
 ### 7.2 SPEC §10 acceptance criteria
 
@@ -605,7 +606,7 @@ Phase 9 closes every row.
 | Demo communicates product with many fictional sources, no setup | P2, P9 | Demo scenario tests, offline safety test, captures |
 | Catalog entries discoverable; tracking independent of enablement | P7 | Picker/catalog tests with disabled providers |
 | Bulk tracking includes subscriptions and excludes probes | P7 | Manifest eligibility and bulk-selection tests |
-| 24 tracked and 107-source mixed collection navigable | P2, P4, P6 | `TestSubscriptionScenarioHasLowReadings`, `TestFullCatalogScenarioTracksSubscriptions`; UI stress in P4/P6 |
+| 24 tracked and 108-source mixed collection navigable | P2, P4, P6 | `TestSubscriptionScenarioHasLowReadings`, `TestFullCatalogScenarioTracksSubscriptions`; UI stress in P4/P6 |
 | Selection preserved through refresh/filter/sort/resize | P4 | Interaction tests by source identity |
 | Screens meet the TUI specification | P3–P4 | Goldens, captures, manual visual review |
 | Green/Blue/Amber/Monokai in light/dark; monochrome keeps state cues | P3–P4 | Palette contrast tests, monochrome golden, stored captures |
@@ -616,14 +617,14 @@ Phase 9 closes every row.
 | Additive fields tolerated; malformed/oversized/incompatible visible | P5 | Schema-drift and cap fixtures |
 | Sample/receipt distinct; countdowns local | P1, P6 | `TestFreshness`, `TestResetLabels`; scheduler tests in P6 |
 | Account/source changes cannot inherit readings or late results | P1, P6 | `TestSourceKey*`, `TestSourceKeyCoalescing`, `TestSourceOrderingUsesStableTieBreak`, `TestImportBoundaries`; generation tests in P6 |
-| Unknown names/Unicode/control sequences cannot break or inject | P3, P9 | Sanitization, truncation, fuzz tests |
+| Unknown names/Unicode/control sequences cannot break or inject | P3, P9 | `TestRenderedExternalTextIsSanitized`, `TestWrapTextUnicodeAndOrder`, `FuzzWrapTextNeverPanicsOrOverflows`, `FuzzCleanTextStripsControls`, `FuzzNormalizeUsageNeverPanics` |
 | Demo makes no backend/credential/session access | P2 | `TestRuntimeReadsOnlyInMemoryFixtures`, `TestRuntimeUsesInjectedRunner`, `TestDemoProductionSourcesHaveNoExternalIO` |
-| Cancellation/timeout/quit clean up and restore terminal | P5, P6, P9 | Runner, quit, and signal tests |
+| Cancellation/timeout/quit clean up and restore terminal | P5, P6, P9 | `TestExecRunnerTimeoutAndCancellation`, `Scheduler.Wait`/cancellation tests, `docs/evidence/terminal-restoration.txt` (q, Ctrl+C, SIGTERM) |
 | Claude/Codex extra windows and supported history | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
 | Muse omitted windows and token-only history | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
 | Gemini app, Gemini CLI, Antigravity distinct and honest | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
 | Additional subscription providers via shared components | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
-| Account-specific checks recorded separately | P8 | `docs/evidence/` index with date/version/command |
+| Account-specific checks recorded separately | P8 | Open/unavailable: `docs/evidence/live-validation.md` |
 
 Open rows need a dated evidence record with backend version and reason, not an
 unchecked box without explanation.
@@ -666,7 +667,7 @@ unchecked box without explanation.
 | Deterministic backend for every scenario | `TestScenariosAreDeterministic` |
 | Subscription desk has 24 tracked sources and low readings | `TestSubscriptionScenarioHasLowReadings` |
 | Attention states are distinct and truthful | `TestAttentionScenarioStates` |
-| Full catalog has 106 IDs and 107 selectable sources | `TestCatalogIsBroadAndClassified`, `TestFullCatalogScenarioTracksSubscriptions` |
+| Full catalog has 106 IDs and 108 selectable sources | `TestCatalogIsBroadAndClassified`, `TestFullCatalogScenarioTracksSubscriptions` |
 | Empty/setup has no tracked sources | `TestEmptyScenarioHasNoTrackedSources` |
 | Muse history is token-only with a real gap | `TestMuseHistoryIsTokenOnly` |
 | History capabilities match readers | `TestHistoryCapabilitiesMatchReaders` |
@@ -882,7 +883,7 @@ Phase 6 wiring note: construct the CodexBar adapter with provider-native-only en
 | Phase 6 requirement | Verification |
 | --- | --- |
 | Queue coalesces by canonical key/operation; unknown accounts coalesce only within provider/variant scope | `TestCoalescesUnknownAndDeduplicatesInflight` |
-| Maximum three backend jobs; 107-source stress stays responsive | `TestConcurrencyCeilingAndStress` |
+| Maximum three backend jobs; 108-source stress stays responsive | `TestConcurrencyCeilingAndStress` |
 | Interval reads Store changes without restart; 60 s minimum | `TestIntervalReadsStoreWithoutRestart` |
 | Visible/selected priority without starvation, with aging and live selected-source ordering | `TestPrioritySelectedBeforeBackground`, `TestAgingPreventsBackgroundStarvation`, `TestSetPriorityReordersQueuedWork`, `TestLivePrioritizeSelectedAheadOfBackground` |
 | One bulk sweep at a time; manual requests join existing in-flight work | `TestBulkProgressAndSingleSweep`, `TestCoalescesUnknownAndDeduplicatesInflight` |
@@ -902,7 +903,7 @@ Phase 6 wiring note: construct the CodexBar adapter with provider-native-only en
 | Live interval loop re-reads Store and schedules automatically without restart | `TestIntervalChangeSchedulesWithoutRestart` |
 | Bubble Tea event-loop result notification refreshes the rendered model | `TestLiveUpdateMessageReloadsRenderedModel` |
 | Live bulk sweep uses scheduler bulk progress | `TestBulkProgressAndSingleSweep`, `TestBulkAccountsForDroppedMembersAndEmptySweep`, `TestBulkAddsNewKeysDuringActiveSweep` |
-| 107-source scheduler-backed TUI responsiveness | `TestSchedulerBackedTUIStaysResponsiveWith107Sources` |
+| 108-source scheduler-backed TUI responsiveness | `TestSchedulerBackedTUIStaysResponsiveWith108Sources` |
 | Backend version is sanitized before header rendering | `TestBackendVersionHeaderIsSanitized` |
 | Live local tick advances ages/countdowns without backend traffic and re-checks visible history through the cache | `TestLiveLocalTickAdvancesAgeWithoutBackendTraffic` |
 | Bulk sweeps joining executing work complete and allow later sweeps | `TestBulkJoinsExecutingTaskAndCompletes` |
@@ -946,6 +947,29 @@ Live exit gate: no credential-backed case existed in this environment, so the
 live-success clause is not asserted. The documented-unavailable path is complete;
 all live cases remain open/unavailable pending an installed CodexBar and real
 credentials.
+
+### 7.11 Phase 9 verification
+
+| Phase 9 requirement | Verification |
+| --- | --- |
+| Demo and live shell appearance measured; live discovery is asynchronous | `TestFirstPaintBudget`, `TestLiveFirstPaintBudgetDespiteSlowDiscovery`, `BenchmarkFirstPaint`, `docs/evidence/performance.md` |
+| Responsiveness during fetch/search/scroll/resize | `TestSchedulerBackedTUIStaysResponsiveWith108Sources`, `docs/evidence/performance.md` |
+| Resize/fuzz for tiny terminals, labels, Unicode, controls, malformed JSON, oversized output | `TestFooterAndTinyTerminal`, `FuzzWrapTextNeverPanicsOrOverflows`, `FuzzCleanTextStripsControls`, `FuzzNormalizeUsageNeverPanics`, `TestMalformedEmptyUnsupportedAndCaps` |
+| Terminal restoration on quit, Ctrl+C, SIGTERM, and quit during a hanging backend | `scripts/terminal-check.sh`, `docs/evidence/terminal-restoration.txt` |
+| Required scene captures and full size×theme matrix stored under evidence; stored scenes verified in CI | `TestStoredSceneCapturesMatch`, `TestEvidenceCaptureMatrixMatchesGoldens`, `TestCapturePhase3`, `TestGoldenMatrix`, `docs/evidence/captures/README.md`, `docs/evidence/captures/matrix/` |
+| Traceability matrices complete with live rows open | §7.1, §7.2, §7.10, §7.11 |
+| Build/run/setup instructions | root `README.md` |
+| Coverage record: catalog, classification, fixtures, live status | `docs/evidence/coverage.md` |
+| Pinned Bubble Tea/Lip Gloss v2 and tool versions rechecked | `docs/evidence/versions.txt` |
+
+Phase 9 accepted prototype limitations (recorded, not deferred to another phase):
+
+- Live `Catalog`/`Version` discovery is asynchronous; the shell paints first and updates on a live event. Demo and live first-paint guards are recorded in `docs/evidence/performance.md`.
+- The full size × theme matrix is stored under `docs/evidence/captures/matrix/` and verified byte-for-byte by `TestEvidenceCaptureMatrixMatchesGoldens`; the 15 scene captures remain under `docs/evidence/captures/` and are checked by `TestStoredSceneCapturesMatch`.
+- Terminal restoration covers q, Ctrl+C, SIGTERM, and quitting while a backend usage command is hanging; backend timeout/cancellation cleanup is additionally covered by runner tests.
+- Manifest safe-metering/presentation hints remain kind/display-name-derived; the review log records that rubric. Review-log variant/display-name assertions are enforced by `TestReviewLogMatchesManifestAnnotations`.
+- Bulk tracking of Gemini is configured-only (`SeedTracked` agrees), preventing duplicate configured/web/api account identities. Interval changes take effect on the next timer fire. `RetryAfter` remains dormant because CodexBar 0.77.0 reports no retry timestamp; these are accepted prototype limitations, not live claims.
+- All Phase 8 live provider cases remain open/unavailable in `docs/evidence/live-validation.md`; no live success is claimed.
 
 ## 8. Suggested commit/PR sequence
 
@@ -1003,7 +1027,7 @@ are the intended parallel tracks.
 | --- | --- |
 | Terminal width/Unicode bugs break layout | Central width helpers, sanitization, golden grids, fuzz/truncation tests |
 | Provider payload drift | Fixtures pinned to 0.77.0; generic rendering; visible compatibility state; record version |
-| First prototype collapses into four providers | Capability manifest + 107-source stress fixture + generic components from day one |
+| First prototype collapses into four providers | Capability manifest + 108-source stress fixture + generic components from day one |
 | Source-key ambiguity merges accounts or splits one account | Canonical grammar, percent-encoding, `@unknown` sentinel, and coalescing tests in Phase 1 |
 | Demo fixtures drift from the browser reference | Parity check or single-source generation for IDs, clock, scenarios, and headline values |
 | Config migration loses preferences | Explicit newer/older/corrupt policy with backup, atomic migration, and round-trip tests |
@@ -1026,7 +1050,7 @@ are the intended parallel tracks.
   no color; all palette contrast tests pass.
 - All project documentation lives under `docs/`; the root collaboration files link
   the index; `make docs-check` passes.
-- The 24-source and 107-selectable-source scenarios are navigable and responsive.
+- The 24-source and 108-selectable-source scenarios are navigable and responsive.
 - Normalized domain, `SourceKey`, error-taxonomy, and backend contract tests pass.
 - Scheduler, cancellation, persistence, config migration, and safety tests pass
   under `-race`.
