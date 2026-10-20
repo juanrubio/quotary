@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/juanrubio/quotary/internal/backend"
+	"github.com/juanrubio/quotary/internal/catalog"
 	"github.com/juanrubio/quotary/internal/config"
 	"github.com/juanrubio/quotary/internal/domain"
 	"github.com/juanrubio/quotary/internal/refresh"
@@ -18,9 +19,10 @@ import (
 
 // Options supplies the live backend and preference store.
 type Options struct {
-	Backend  backend.Backend
-	Store    config.Store
-	Interval func() time.Duration
+	Backend      backend.Backend
+	Store        config.Store
+	Interval     func() time.Duration
+	StoreWarning string
 }
 
 type historyFailure struct {
@@ -54,6 +56,7 @@ type Session struct {
 	priorities     map[string]int
 	historyErrors  map[string]historyFailure
 	historyLoading map[string]bool
+	storeWarning   string
 	backendErr     string
 	backendVersion string
 }
@@ -77,6 +80,7 @@ func New(parent context.Context, opts Options) (*Session, error) {
 		historyLoading: map[string]bool{},
 		bulkKeys:       map[string]bool{},
 		priorities:     map[string]int{},
+		storeWarning:   opts.StoreWarning,
 	}
 	s.scheduler = refresh.New(opts.Backend, opts.Store, refresh.Options{
 		MaxJobs: 3,
@@ -91,11 +95,32 @@ func New(parent context.Context, opts Options) (*Session, error) {
 	s.wg.Add(1)
 	go s.consume(results)
 
-	catalog, err := opts.Backend.Catalog(ctx)
+	rawCatalog, err := opts.Backend.Catalog(ctx)
 	if err != nil {
 		s.backendErr = safeError(err)
 	} else {
-		s.catalog = catalog
+		s.catalog = catalog.Apply(rawCatalog)
+		migrated := migrateGeminiTracked(s.prefs.Tracked)
+		migratedPins := migrateGeminiPins(s.prefs.Pins)
+		changed := !sameStrings(migrated, s.prefs.Tracked) || !sameStrings(migratedPins, s.prefs.Pins)
+		s.prefs.Tracked = migrated
+		s.prefs.Pins = migratedPins
+		firstRun := false
+		if provider, ok := opts.Store.(interface{ FirstRun() bool }); ok {
+			firstRun = provider.FirstRun()
+		}
+		if len(s.prefs.Tracked) == 0 && firstRun {
+			seeded := catalog.SeedTracked(s.catalog)
+			if len(seeded) > 0 {
+				s.prefs.Tracked = seeded
+				changed = true
+			}
+		}
+		if changed {
+			if saveErr := opts.Store.Save(s.prefs); saveErr != nil {
+				s.storeWarning = safeError(saveErr)
+			}
+		}
 	}
 	if version, versionErr := opts.Backend.Version(ctx); versionErr == nil {
 		s.backendVersion = version.Version
@@ -108,7 +133,11 @@ func New(parent context.Context, opts Options) (*Session, error) {
 			continue
 		}
 		s.ensureSkeleton(parsed)
-		s.enqueueAutomatic(parsed, 0)
+		if s.autoPollAllowed(parsed) {
+			s.enqueueAutomatic(parsed, 0)
+		} else {
+			s.markAutoDisabled(parsed)
+		}
 	}
 	s.wg.Add(1)
 	go s.intervalLoop()
@@ -249,6 +278,131 @@ func (s *Session) snapshotKeyLocked(key domain.SourceKey) string {
 	return key.String()
 }
 
+func (s *Session) descriptorFor(key domain.SourceKey) (domain.SourceDescriptor, bool) {
+	for _, descriptor := range s.catalog.Providers {
+		if descriptor.ProviderID != key.Provider {
+			continue
+		}
+		if descriptor.Key.Variant == key.Variant {
+			return descriptor, true
+		}
+		if key.Variant == "" && descriptor.Variant == domain.VariantConfigured {
+			return descriptor, true
+		}
+	}
+	return domain.SourceDescriptor{}, false
+}
+
+func (s *Session) autoPollAllowed(key domain.SourceKey) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	descriptor, ok := s.descriptorFor(key)
+	if !ok || !descriptor.Available || descriptor.Capabilities.ActiveProbe != domain.CapabilityUnsupported {
+		return false
+	}
+	switch descriptor.Kind {
+	case domain.KindSubscription, domain.KindMixed, domain.KindCredits, domain.KindMeteredAPI:
+		return true
+	default:
+		return false
+	}
+}
+
+func (s *Session) activeProbe(key domain.SourceKey) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	descriptor, ok := s.descriptorFor(key)
+	return ok && descriptor.Capabilities.ActiveProbe == domain.CapabilitySupported
+}
+
+func (s *Session) markAutoDisabled(key domain.SourceKey) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	snapshot := s.snapshots[key.String()]
+	snapshot.Key = key
+	snapshot.ProviderID = key.Provider
+	if snapshot.DisplayName == "" {
+		snapshot.DisplayName = s.displayNameLocked(key)
+	}
+	snapshot.State = domain.StatusUnavailable
+	snapshot.Error = domain.NewScopedError(domain.ErrUnavailable, key.String(), "Automatic polling is disabled for this source")
+	s.snapshots[key.String()] = snapshot
+	s.signalEventLocked()
+}
+
+func migrateGeminiTracked(tracked []string) []string {
+	hasGeminiVariant := false
+	generic := false
+	for _, value := range tracked {
+		parsed, err := domain.ParseSourceKey(value)
+		if err != nil || parsed.Provider != "gemini" {
+			continue
+		}
+		if parsed.Variant == "" {
+			generic = true
+		} else {
+			hasGeminiVariant = true
+		}
+	}
+	if !generic {
+		return tracked
+	}
+	result := make([]string, 0, len(tracked)+1)
+	for _, value := range tracked {
+		parsed, err := domain.ParseSourceKey(value)
+		if err == nil && parsed.Provider == "gemini" && parsed.Variant == "" {
+			continue
+		}
+		result = append(result, value)
+	}
+	if !hasGeminiVariant {
+		result = append(result, (domain.SourceKey{Provider: "gemini", Variant: domain.VariantConfigured}).String())
+	}
+	return result
+}
+
+func migrateGeminiPins(pins []string) []string {
+	result := make([]string, 0, len(pins))
+	hasVariant := false
+	generic := false
+	for _, value := range pins {
+		parsed, err := domain.ParseSourceKey(value)
+		if err == nil && parsed.Provider == "gemini" {
+			if parsed.Variant == "" {
+				generic = true
+			} else {
+				hasVariant = true
+			}
+		}
+	}
+	if !generic {
+		return pins
+	}
+	for _, value := range pins {
+		parsed, err := domain.ParseSourceKey(value)
+		if err == nil && parsed.Provider == "gemini" && parsed.Variant == "" {
+			continue
+		}
+		result = append(result, value)
+	}
+	if !hasVariant {
+		result = append(result, (domain.SourceKey{Provider: "gemini", Variant: domain.VariantConfigured}).String())
+	}
+	return result
+}
+
+func sameStrings(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *Session) trackedLocked(key domain.SourceKey) bool {
 	for _, tracked := range s.prefs.Tracked {
 		parsed, err := domain.ParseSourceKey(tracked)
@@ -310,7 +464,9 @@ func (s *Session) intervalLoop() {
 				targets := s.refreshTargetsLocked(parsed)
 				s.mu.RUnlock()
 				for _, target := range targets {
-					s.enqueueAutomatic(target, 1)
+					if s.autoPollAllowed(target) {
+						s.enqueueAutomatic(target, 1)
+					}
 				}
 			}
 		}
@@ -397,10 +553,22 @@ func (s *Session) Prioritize(visible []string, selected string) {
 // StartBulk begins a single scheduler sweep and marks members pending.
 func (s *Session) StartBulk(keys []string) string {
 	parsedKeys := make([]domain.SourceKey, 0, len(keys))
+	var blocked []domain.SourceKey
 	for _, key := range keys {
 		if parsed, err := domain.ParseSourceKey(key); err == nil {
+			if s.activeProbe(parsed) {
+				blocked = append(blocked, parsed)
+				continue
+			}
 			parsedKeys = append(parsedKeys, parsed)
 		}
+	}
+	for _, key := range blocked {
+		s.mu.Lock()
+		s.done[key.String()] = true
+		s.snapshots[key.String()] = domain.UsageSnapshot{Key: key, ProviderID: key.Provider, DisplayName: s.displayNameLocked(key), State: domain.StatusBackendIncompatible, Error: domain.NewScopedError(domain.ErrUnsupported, key.String(), "Active probe is outside the prototype")}
+		s.signalEventLocked()
+		s.mu.Unlock()
 	}
 	_, _, active, existingID := s.scheduler.BulkProgress()
 	s.mu.Lock()
@@ -416,6 +584,10 @@ func (s *Session) StartBulk(keys []string) string {
 				s.done[key] = false
 			}
 		}
+		for _, parsed := range blocked {
+			s.bulkKeys[parsed.String()] = true
+			s.done[parsed.String()] = true
+		}
 		s.bulkTotal = len(s.bulkKeys)
 		s.mu.Unlock()
 		s.scheduler.StartBulkWithID(existingID, parsedKeys, "live", true)
@@ -429,6 +601,10 @@ func (s *Session) StartBulk(keys []string) string {
 	for _, parsed := range parsedKeys {
 		s.bulkKeys[parsed.String()] = true
 		s.done[parsed.String()] = false
+	}
+	for _, parsed := range blocked {
+		s.bulkKeys[parsed.String()] = true
+		s.done[parsed.String()] = true
 	}
 	s.bulkTotal = len(s.bulkKeys)
 	s.mu.Unlock()
@@ -494,6 +670,9 @@ func (s *Session) BackendError() string { return s.backendErr }
 // BackendVersion reports the detected CodexBar version.
 func (s *Session) BackendVersion() string { return s.backendVersion }
 
+// ConfigWarning reports a migration/corruption/newer-schema setup message.
+func (s *Session) ConfigWarning() string { return s.storeWarning }
+
 // Query returns the current search query (managed by the TUI).
 func (s *Session) Query() string { return "" }
 
@@ -501,6 +680,14 @@ func (s *Session) Query() string { return "" }
 func (s *Session) StartRefresh(key string) {
 	parsed, err := domain.ParseSourceKey(key)
 	if err != nil {
+		return
+	}
+	if s.activeProbe(parsed) {
+		s.mu.Lock()
+		s.done[key] = true
+		s.snapshots[key] = domain.UsageSnapshot{Key: parsed, ProviderID: parsed.Provider, DisplayName: s.displayNameLocked(parsed), State: domain.StatusBackendIncompatible, Error: domain.NewScopedError(domain.ErrUnsupported, key, "Active probe is outside the prototype")}
+		s.signalEventLocked()
+		s.mu.Unlock()
 		return
 	}
 	s.mu.Lock()
@@ -705,7 +892,11 @@ func (s *Session) SavePreferences(prefs config.Preferences) error {
 			continue
 		}
 		if parsed, err := domain.ParseSourceKey(key); err == nil {
-			s.enqueueAutomatic(parsed, 0)
+			if s.autoPollAllowed(parsed) {
+				s.enqueueAutomatic(parsed, 0)
+			} else {
+				s.markAutoDisabled(parsed)
+			}
 		}
 	}
 	return nil

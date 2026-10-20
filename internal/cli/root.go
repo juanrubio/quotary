@@ -54,17 +54,29 @@ func NewRootCmd() *cobra.Command {
 }
 
 func runLive(ctx context.Context) error {
-	store := config.NewMemoryStore(config.Defaults())
-	prefs := store.Load()
-	adapter, err := codexbar.New(codexbar.Options{Path: prefs.BackendPath, NativeOnly: true})
+	store, err := config.NewJSONStore("")
 	if err != nil {
 		return tui.Run(ctx, tui.Options{SetupError: err.Error()})
 	}
-	session, err := live.New(ctx, live.Options{Backend: adapter, Store: store})
+	prefs := store.Load()
+	warning := store.Warning()
+	adapter, err := codexbar.New(liveCodexbarOptions(prefs))
+	if err != nil {
+		return tui.Run(ctx, tui.Options{SetupError: err.Error()})
+	}
+	session, err := live.New(ctx, live.Options{Backend: adapter, Store: store, StoreWarning: warning})
 	if err != nil {
 		return err
 	}
 	return tui.Run(ctx, tui.Options{Session: session})
+}
+
+func liveCodexbarOptions(prefs config.Preferences) codexbar.Options {
+	options := codexbar.Options{Path: prefs.BackendPath, NativeOnly: true}
+	if prefs.BackendConfigPath != "" {
+		options.Env = []string{"CODEXBAR_CONFIG=" + prefs.BackendConfigPath}
+	}
+	return options
 }
 
 func demoDeps() demo.Deps {

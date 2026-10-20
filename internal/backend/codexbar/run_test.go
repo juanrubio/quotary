@@ -74,3 +74,11 @@ func TestExecRunnerStderrCapIsEnforced(t *testing.T) {
 		t.Fatalf("err=%v", err)
 	}
 }
+
+func TestExecRunnerRunEnvDeliversEnvironment(t *testing.T) {
+	path := script(t, "printf '%s' \"$CODEXBAR_CONFIG\"\n")
+	stdout, _, err := (ExecRunner{}).RunEnv(context.Background(), path, nil, 1024, []string{"CODEXBAR_CONFIG=/tmp/fixture.json"})
+	if err != nil || string(stdout) != "/tmp/fixture.json" {
+		t.Fatalf("stdout=%q err=%v", stdout, err)
+	}
+}

@@ -457,7 +457,7 @@ func (m *model) renderPicker(width, height int) []string {
 			last = "No reading"
 		}
 		if descriptor.Capabilities.ActiveProbe == domain.CapabilitySupported {
-			last = "Manual setup · active probe"
+			last = "Outside prototype · active probe"
 		}
 		line := prefix + mark + "  " + padRight(descriptor.DisplayName, nameWidth)
 		if kindWidth > 0 {

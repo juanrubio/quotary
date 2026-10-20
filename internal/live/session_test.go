@@ -544,6 +544,9 @@ func TestLivePrioritizeSelectedAheadOfBackground(t *testing.T) {
 	}
 	s := newLive(t, be, prefs)
 	defer func() { _ = s.Close() }()
+	for i := 0; i < 10; i++ {
+		s.StartRefresh(fmt.Sprintf("provider-%02d", i))
+	}
 	for i := 0; i < 3; i++ {
 		select {
 		case <-be.started:
@@ -669,5 +672,242 @@ func TestLiveAdapterShapedFailureReplacesSkeleton(t *testing.T) {
 	})
 	if key := s.Snapshots(context.Background())[0].Key.String(); key != "codex@unknown" {
 		t.Fatalf("skeleton not reconciled: %s", key)
+	}
+}
+
+type seedBackend struct{ *fakeBackend }
+
+func (b *seedBackend) Catalog(context.Context) (backend.CatalogSnapshot, error) {
+	return backend.CatalogSnapshot{Providers: []domain.SourceDescriptor{
+		{Key: domain.SourceKey{Provider: "codex"}, ProviderID: "codex", DisplayName: "Codex", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "openai"}, ProviderID: "openai", DisplayName: "OpenAI", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "gemini"}, ProviderID: "gemini", DisplayName: "Gemini", Available: true, Enabled: true},
+	}}, nil
+}
+
+func TestLiveFirstRunSeedsOnlyCompatibleEnabledSources(t *testing.T) {
+	store := config.NewMemoryStore(config.Defaults())
+	s, err := New(context.Background(), Options{Backend: &seedBackend{fakeBackend: &fakeBackend{}}, Store: store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	prefs := s.Preferences()
+	if !contains(prefs.Tracked, "codex") || contains(prefs.Tracked, "openai") || !contains(prefs.Tracked, "gemini:configured") || contains(prefs.Tracked, "gemini:web") || contains(prefs.Tracked, "gemini:api") || contains(prefs.Tracked, "gemini") {
+		t.Fatalf("seeded tracked=%v", prefs.Tracked)
+	}
+	catalog, _ := s.Catalog(context.Background())
+	seen := map[string]bool{}
+	for _, descriptor := range catalog.Providers {
+		seen[descriptor.Key.String()] = true
+	}
+	if seen["gemini"] || !seen["gemini:configured"] || !seen["gemini:web"] || !seen["gemini:api"] {
+		t.Fatalf("catalog variants=%v", seen)
+	}
+}
+
+type gatingBackend struct {
+	*fakeBackend
+	mu         sync.Mutex
+	calls      int
+	callsByKey map[string]int
+}
+
+func (b *gatingBackend) Catalog(context.Context) (backend.CatalogSnapshot, error) {
+	return backend.CatalogSnapshot{Providers: []domain.SourceDescriptor{
+		{Key: domain.SourceKey{Provider: "codex"}, ProviderID: "codex", DisplayName: "Codex", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "azureopenai"}, ProviderID: "azureopenai", DisplayName: "Azure", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "openrouter"}, ProviderID: "openrouter", DisplayName: "OpenRouter", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "unknown-provider"}, ProviderID: "unknown-provider", DisplayName: "Unknown", Available: true, Enabled: true},
+	}}, nil
+}
+
+func (b *gatingBackend) Usage(ctx context.Context, req backend.UsageRequest) ([]domain.UsageSnapshot, error) {
+	b.mu.Lock()
+	b.calls++
+	if b.callsByKey == nil {
+		b.callsByKey = map[string]int{}
+	}
+	b.callsByKey[req.SourceKey]++
+	b.mu.Unlock()
+	return b.fakeBackend.Usage(ctx, req)
+}
+
+func (b *gatingBackend) count() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.calls
+}
+
+func (b *gatingBackend) countFor(key string) int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.callsByKey[key]
+}
+
+func TestLiveAutomaticPollingSkipsUnknownAndProbe(t *testing.T) {
+	be := &gatingBackend{fakeBackend: &fakeBackend{}}
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"codex", "openrouter", "azureopenai", "unknown-provider"}
+	store := config.NewMemoryStore(prefs)
+	s, err := New(context.Background(), Options{Backend: be, Store: store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	waitFor(t, func() bool { return be.count() >= 2 })
+	time.Sleep(80 * time.Millisecond)
+	if calls := be.count(); calls != 2 {
+		t.Fatalf("automatic polling called backend %d times; want codex+openrouter only", calls)
+	}
+	s.StartRefresh("azureopenai")
+	if calls := be.count(); calls != 2 {
+		t.Fatal("manual active probe fired a backend call")
+	}
+	waitFor(t, func() bool {
+		for _, snapshot := range s.Snapshots(context.Background()) {
+			if snapshot.Key.Provider == "azureopenai" && snapshot.State == domain.StatusBackendIncompatible {
+				return true
+			}
+		}
+		return false
+	})
+}
+
+func TestLiveSeedingRequiresGenuineFirstRun(t *testing.T) {
+	store := config.NewMemoryStore(config.Defaults())
+	if err := store.Save(config.Defaults()); err != nil {
+		t.Fatal(err)
+	}
+	be := &seedBackend{fakeBackend: &fakeBackend{}}
+	s, err := New(context.Background(), Options{Backend: be, Store: store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	if tracked := s.Preferences().Tracked; len(tracked) != 0 {
+		t.Fatalf("explicitly empty tracking reseeded: %v", tracked)
+	}
+}
+
+func TestLiveMigratesGenericGeminiTrackedKey(t *testing.T) {
+	for _, tracked := range [][]string{{"gemini"}, {"gemini", "gemini:web@unknown"}} {
+		store := config.NewMemoryStore(config.Defaults())
+		prefs := config.Defaults()
+		prefs.Tracked = tracked
+		if err := store.Save(prefs); err != nil {
+			t.Fatal(err)
+		}
+		s, err := New(context.Background(), Options{Backend: &seedBackend{fakeBackend: &fakeBackend{}}, Store: store})
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := s.Preferences().Tracked
+		_ = s.Close()
+		if contains(got, "gemini") {
+			t.Fatalf("generic gemini retained: %v", got)
+		}
+		if len(tracked) == 1 && !contains(got, "gemini:configured") {
+			t.Fatalf("configured variant not seeded: %v", got)
+		}
+		if len(tracked) > 1 && !contains(got, "gemini:web@unknown") {
+			t.Fatalf("established variant lost: %v", got)
+		}
+	}
+}
+
+func TestLiveStoreWarningPropagates(t *testing.T) {
+	store := config.NewMemoryStore(config.Defaults())
+	s, err := New(context.Background(), Options{Backend: &fakeBackend{}, Store: store, StoreWarning: "preferences migrated"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	if s.ConfigWarning() != "preferences migrated" {
+		t.Fatalf("warning=%q", s.ConfigWarning())
+	}
+}
+
+type knownAccountBackend struct {
+	*fakeBackend
+	mu    sync.Mutex
+	calls int
+}
+
+func (b *knownAccountBackend) Usage(ctx context.Context, req backend.UsageRequest) ([]domain.UsageSnapshot, error) {
+	b.mu.Lock()
+	b.calls++
+	b.mu.Unlock()
+	key, _ := domain.ParseSourceKey(req.SourceKey)
+	key.Account = "one"
+	key.AccountUnknown = false
+	percent := 20.0
+	return []domain.UsageSnapshot{{Key: key, ProviderID: key.Provider, DisplayName: key.Provider, State: domain.StatusCurrent, Windows: []domain.AllowanceWindow{{Label: "Plan", UsedPercent: &percent}}}}, nil
+}
+
+func TestLiveIntervalRefreshesEstablishedAccountSource(t *testing.T) {
+	be := &knownAccountBackend{fakeBackend: &fakeBackend{}}
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"codex"}
+	prefs.IntervalSeconds = 300
+	store := config.NewMemoryStore(prefs)
+	s, err := New(context.Background(), Options{
+		Backend: be,
+		Store:   store,
+		Interval: func() time.Duration {
+			return 20 * time.Millisecond
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	time.Sleep(300 * time.Millisecond)
+	be.mu.Lock()
+	calls := be.calls
+	be.mu.Unlock()
+	if calls < 2 {
+		t.Fatalf("interval calls=%d snapshots=%+v", calls, s.Snapshots(context.Background()))
+	}
+}
+
+func TestLiveBulkExcludesActiveProbe(t *testing.T) {
+	be := &gatingBackend{fakeBackend: &fakeBackend{}}
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"codex", "azureopenai"}
+	store := config.NewMemoryStore(prefs)
+	s, err := New(context.Background(), Options{Backend: be, Store: store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	waitFor(t, func() bool { return be.count() == 1 })
+	s.StartBulk([]string{"codex", "azureopenai"})
+	waitFor(t, func() bool {
+		done, total, active := s.BulkProgress()
+		return !active && done == total && total == 2
+	})
+	time.Sleep(40 * time.Millisecond)
+	if calls := be.countFor("azureopenai"); calls != 0 {
+		t.Fatalf("bulk fired active probe; calls=%d", calls)
+	}
+}
+
+func TestLiveMigratesGenericGeminiPins(t *testing.T) {
+	store := config.NewMemoryStore(config.Defaults())
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"gemini"}
+	prefs.Pins = []string{"gemini"}
+	if err := store.Save(prefs); err != nil {
+		t.Fatal(err)
+	}
+	s, err := New(context.Background(), Options{Backend: &seedBackend{fakeBackend: &fakeBackend{}}, Store: store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	pins := s.Preferences().Pins
+	if contains(pins, "gemini") || !contains(pins, "gemini:configured") {
+		t.Fatalf("pins=%v", pins)
 	}
 }

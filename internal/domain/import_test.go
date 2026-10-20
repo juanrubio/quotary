@@ -46,6 +46,7 @@ func TestImportBoundaries(t *testing.T) {
 		{filepath.Join(root, "internal", "backend", "codexbar"), []string{"charm.land/bubbletea", "charm.land/lipgloss", "internal/tui", "internal/theme"}},
 		{filepath.Join(root, "internal", "refresh"), []string{"charm.land/bubbletea", "charm.land/lipgloss", "internal/tui", "internal/theme", "internal/backend/codexbar"}},
 		{filepath.Join(root, "internal", "live"), []string{"charm.land/bubbletea", "charm.land/lipgloss", "internal/tui", "internal/theme", "internal/backend/codexbar"}},
+		{filepath.Join(root, "internal", "catalog"), []string{"charm.land/bubbletea", "charm.land/lipgloss", "internal/tui", "internal/theme", "internal/backend/codexbar"}},
 		{filepath.Join(root, "internal", "tui"), []string{"internal/backend/codexbar"}},
 	}
 	for _, tc := range cases {

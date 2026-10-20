@@ -64,6 +64,9 @@ func TestSchedulerBackedTUIStaysResponsiveWith107Sources(t *testing.T) {
 	}
 	defer func() { _ = session.Close() }()
 	m := newModel(Options{Session: session})
+	for _, snapshot := range session.Snapshots(context.Background()) {
+		session.StartRefresh(snapshot.Key.String())
+	}
 	start := time.Now()
 	for i := 0; i < 50; i++ {
 		m.width, m.height = 80, 24
@@ -175,5 +178,21 @@ func TestLiveLocalTickAdvancesAgeWithoutBackendTraffic(t *testing.T) {
 	}
 	if callsAfter != callsBefore {
 		t.Fatal("local tick caused backend traffic")
+	}
+}
+
+func TestLiveConfigWarningRendersInShell(t *testing.T) {
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"provider-000"}
+	store := config.NewMemoryStore(prefs)
+	session, err := live.New(context.Background(), live.Options{Backend: stressBackend{}, Store: store, StoreWarning: "preferences migrated to current schema"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = session.Close() }()
+	m := newModel(Options{Session: session})
+	view := checkFrame(t, m, 160, 48)
+	if !strings.Contains(view, "preferences migrated") {
+		t.Fatalf("store warning not rendered:\n%s", view)
 	}
 }

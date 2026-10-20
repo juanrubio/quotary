@@ -97,13 +97,14 @@ type Store interface {
 
 // MemoryStore keeps preferences in memory only. Demo mode must use this.
 type MemoryStore struct {
-	mu    sync.Mutex
-	prefs Preferences
+	mu       sync.Mutex
+	prefs    Preferences
+	firstRun bool
 }
 
 // NewMemoryStore returns a store seeded with prefs.
 func NewMemoryStore(prefs Preferences) *MemoryStore {
-	return &MemoryStore{prefs: clone(Normalize(prefs))}
+	return &MemoryStore{prefs: clone(Normalize(prefs)), firstRun: true}
 }
 
 // Load returns the current preferences.
@@ -121,7 +122,15 @@ func (s *MemoryStore) Save(prefs Preferences) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.prefs = clone(Normalize(prefs))
+	s.firstRun = false
 	return nil
+}
+
+// FirstRun reports whether no preferences have been saved yet.
+func (s *MemoryStore) FirstRun() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.firstRun
 }
 
 func clone(prefs Preferences) Preferences {

@@ -1724,3 +1724,19 @@ func TestThemeSizeSmokeMatrix(t *testing.T) {
 		}
 	}
 }
+
+func TestActiveProbeSourceShowsOutsidePrototype(t *testing.T) {
+	m := demoModel(t, demo.ScenarioCatalog)
+	m.catalog.Providers = []domain.SourceDescriptor{{
+		Key: domain.SourceKey{Provider: "azureopenai"}, ProviderID: "azureopenai", DisplayName: "Azure OpenAI",
+		Kind: domain.KindMeteredAPI, Available: true,
+		Capabilities: domain.Capabilities{Usage: domain.CapabilityUnknown, ActiveProbe: domain.CapabilitySupported},
+	}}
+	m.visible = nil
+	m.screen = screenPicker
+	m.pickerIndex = 0
+	view := checkFrame(t, m, 120, 40)
+	if !strings.Contains(view, "Outside prototype · active probe") {
+		t.Fatalf("active probe not labelled:\n%s", view)
+	}
+}

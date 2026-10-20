@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/juanrubio/quotary/internal/config"
 )
 
 func TestVersion(t *testing.T) {
@@ -38,5 +40,18 @@ func TestDemoDepsUseInMemoryFixtureFS(t *testing.T) {
 		t.Fatal(err)
 	} else if err := file.Close(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestLiveCodexbarOptionsOnlyPassesConfiguredEnv(t *testing.T) {
+	prefs := config.Defaults()
+	options := liveCodexbarOptions(prefs)
+	if len(options.Env) != 0 || !options.NativeOnly {
+		t.Fatalf("unconfigured options=%+v", options)
+	}
+	prefs.BackendConfigPath = "/tmp/codexbar-config.json"
+	options = liveCodexbarOptions(prefs)
+	if len(options.Env) != 1 || options.Env[0] != "CODEXBAR_CONFIG=/tmp/codexbar-config.json" {
+		t.Fatalf("configured options=%+v", options)
 	}
 }

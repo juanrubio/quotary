@@ -917,6 +917,21 @@ Live mode constructs the CodexBar adapter and scheduler through `internal/live`,
 
 Phase 9 deferrals: CodexBar currently reports no retry timestamp, so the `RetryAfter` seam is dormant; catalog discovery still occurs during live session construction rather than behind the first shell paint; an interval settings change takes effect when the current timer next fires. These are recorded rather than claimed as verified behavior.
 
+### 7.9 Phase 7 verification
+
+| Phase 7 requirement | Verification |
+| --- | --- |
+| Manifest ID set and review-log annotations match the parsed 106-provider reference; Azure is an active probe with reason | `TestManifestCoversReferenceCatalog`, `TestReviewLogCoversEveryManifestEntry`, `TestReviewLogMatchesManifestAnnotations`, `docs/evidence/catalog-review.md` |
+| Gemini generic key retired/migrated; configured/web/api variants stable; established variants preserved; Antigravity distinct | `TestApplyRetiresGeminiGenericAndSplitsVariants`, `TestGeminiVariantPresentationNamesDistinct`, `TestLiveFirstRunSeedsOnlyCompatibleEnabledSources`, `TestLiveMigratesGenericGeminiTrackedKey`, `TestLiveMigratesGenericGeminiPins` |
+| Conservative unknown defaults; bulk and automatic polling exclude API, credits, non-usage, probes, and unknown; active probes are labelled outside the prototype | `TestBulkTrackingExcludesUnknownAPICreditsAndProbes`, `TestLiveAutomaticPollingSkipsUnknownAndProbe`, `TestLiveBulkExcludesActiveProbe`, `TestActiveProbeSourceShowsOutsidePrototype` |
+| Every classified subscription/mixed source is bulk-trackable in the stress fixture | `TestAllClassifiedSubscriptionsAreBulkTrackableStress` |
+| First-run tracking seeds only enabled compatible sources and a genuine first run; explicitly empty tracking stays empty | `TestSeedTrackedOnlyEnabledCompatible`, `TestLiveFirstRunSeedsOnlyCompatibleEnabledSources`, `TestLiveSeedingRequiresGenuineFirstRun` |
+| Versioned JSON preferences round-trip including backend config path; XDG and explicit env paths | `TestJSONStoreRoundTrip`, `TestDefaultJSONStorePathHonorsEnv`, `TestDefaultJSONStorePathUsesXDG` |
+| Corrupt config backs up and restores defaults; older migrates; newer refuses writes even before Load | `TestJSONStoreCorruptBacksUpAndRestoresDefaults`, `TestJSONStoreOlderVersionMigrates`, `TestJSONStoreNewerVersionRefusesWrites`, `TestJSONStoreSaveBeforeLoadRefusesNewerSchema` |
+| Unknown theme normalizes to Green | `TestJSONStoreUnknownThemeNormalizesGreen` |
+| Live CLI uses the JSON store, passes CODEXBAR_CONFIG only when configured, and surfaces store warnings | `TestLiveFirstRunSeedsOnlyCompatibleEnabledSources`, `TestJSONStoreRoundTrip`, `TestConfiguredEnvironmentReachesRunner`, `TestLiveStoreWarningPropagates`, `TestLiveConfigWarningRendersInShell`, `TestLiveCodexbarOptionsOnlyPassesConfiguredEnv` |
+| Catalog/live import boundaries | `TestImportBoundaries` |
+
 ## 8. Suggested commit/PR sequence
 
 1. `chore: initialize Go module, Makefile, docs-check, CI, lint, and contributor docs`

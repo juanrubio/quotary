@@ -69,6 +69,10 @@ type liveEventSession interface {
 	Events() <-chan struct{}
 }
 
+type warningSession interface {
+	ConfigWarning() string
+}
+
 type versionedSession interface {
 	BackendVersion() string
 }
@@ -187,6 +191,9 @@ func newModel(opts Options) *model {
 	}
 	if versioned, ok := opts.Session.(versionedSession); ok {
 		m.backendVersion = versioned.BackendVersion()
+	}
+	if warning, ok := opts.Session.(warningSession); ok {
+		m.status = cleanText(warning.ConfigWarning())
 	}
 	m.load()
 	m.applyTheme()
@@ -1203,6 +1210,9 @@ func (m *model) trackAllSubscriptions() {
 			continue
 		}
 		if !descriptor.Capabilities.BulkTrackable(descriptor.Kind) {
+			continue
+		}
+		if descriptor.ProviderID == "gemini" && descriptor.Variant != domain.VariantConfigured {
 			continue
 		}
 		if !descriptor.Tracked {

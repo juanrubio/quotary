@@ -34,6 +34,7 @@ type Options struct {
 	Runner         Runner
 	LookPath       func(string) (string, error)
 	NativeOnly     bool
+	Env            []string
 	Now            func() time.Time
 	VariantAllowed func(provider string, variant domain.Variant) bool
 }
@@ -43,6 +44,7 @@ type Adapter struct {
 	path           string
 	runner         Runner
 	nativeOnly     bool
+	env            []string
 	now            func() time.Time
 	variantAllowed func(string, domain.Variant) bool
 }
@@ -84,7 +86,7 @@ func New(opts Options) (*Adapter, error) {
 		if err != nil || !isExecutable(resolved) {
 			return nil, scoped(domain.ErrConfig, "", "configured CodexBar path is not executable")
 		}
-		return &Adapter{path: resolved, runner: runner, nativeOnly: opts.NativeOnly, now: now, variantAllowed: variantAllowed}, nil
+		return &Adapter{path: resolved, runner: runner, nativeOnly: opts.NativeOnly, env: append([]string(nil), opts.Env...), now: now, variantAllowed: variantAllowed}, nil
 	}
 	resolved, err := lookPath("codexbar")
 	if err != nil || !isExecutable(resolved) {
@@ -94,7 +96,7 @@ func New(opts Options) (*Adapter, error) {
 	if err != nil {
 		return nil, scoped(domain.ErrConfig, "", "codexbar path could not be resolved")
 	}
-	return &Adapter{path: absolute, runner: runner, nativeOnly: opts.NativeOnly, now: now, variantAllowed: variantAllowed}, nil
+	return &Adapter{path: absolute, runner: runner, nativeOnly: opts.NativeOnly, env: append([]string(nil), opts.Env...), now: now, variantAllowed: variantAllowed}, nil
 }
 
 func defaultVariantAllowed(provider string, variant domain.Variant) bool {
@@ -192,7 +194,19 @@ func (a *Adapter) runRaw(ctx context.Context, timeout time.Duration, cap int, ar
 	}
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	stdout, stderr, err := a.runner.Run(runCtx, a.path, args, cap)
+	var stdout, stderr []byte
+	var err error
+	if len(a.env) > 0 {
+		if envRunner, ok := a.runner.(interface {
+			RunEnv(context.Context, string, []string, int, []string) ([]byte, []byte, error)
+		}); ok {
+			stdout, stderr, err = envRunner.RunEnv(runCtx, a.path, args, cap, a.env)
+		} else {
+			return nil, nil, scoped(domain.ErrConfig, "", "runner does not support configured environment")
+		}
+	} else {
+		stdout, stderr, err = a.runner.Run(runCtx, a.path, args, cap)
+	}
 	if err == nil && len(stdout) > cap {
 		return stdout, stderr, ErrOutputCap
 	}

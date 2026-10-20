@@ -2473,3 +2473,24 @@ func TestOperationDeadlineConstants(t *testing.T) {
 		t.Fatal("operation deadline constants changed")
 	}
 }
+
+type envRunner struct {
+	fakeRunner
+	env []string
+}
+
+func (e *envRunner) RunEnv(ctx context.Context, path string, args []string, max int, env []string) ([]byte, []byte, error) {
+	e.env = append([]string(nil), env...)
+	return []byte(`{"provider":"codex","primary":{"label":"Plan","usedPercent":10}}`), nil, nil
+}
+
+func TestConfiguredEnvironmentReachesRunner(t *testing.T) {
+	runner := &envRunner{}
+	a := &Adapter{path: "/fixture/codexbar", runner: runner, env: []string{"CODEXBAR_CONFIG=/tmp/config.json"}}
+	if _, err := a.Usage(context.Background(), backend.UsageRequest{ProviderID: "codex"}); err != nil {
+		t.Fatal(err)
+	}
+	if len(runner.env) != 1 || runner.env[0] != "CODEXBAR_CONFIG=/tmp/config.json" {
+		t.Fatalf("env=%v", runner.env)
+	}
+}

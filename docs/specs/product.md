@@ -384,7 +384,9 @@ are implementation targets to measure, not validated performance claims.
 ## 8. Preferences and data boundaries
 
 Quotary stores preferences at `$XDG_CONFIG_HOME/quotary/config.json`, falling back
-to `~/.config/quotary/config.json` when XDG is absent or invalid. Store the named
+to `~/.config/quotary/config.json` when XDG is absent or invalid. The
+`QUOTARY_CONFIG_PATH` environment variable is an explicit diagnostic/test
+override. Store the named
 theme (`green`, `blue`, `amber`, or `monokai`), layout, tracked sources,
 pins/order, refresh interval, privacy mode, and optional backend/config paths. An
 absent or unknown theme name normalizes to `green`. Use a versioned format and

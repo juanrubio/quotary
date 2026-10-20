@@ -24,7 +24,12 @@ type ExecRunner struct{}
 
 const terminationGrace = 500 * time.Millisecond
 
-func (ExecRunner) Run(ctx context.Context, path string, args []string, maxOutput int) ([]byte, []byte, error) {
+func (e ExecRunner) Run(ctx context.Context, path string, args []string, maxOutput int) ([]byte, []byte, error) {
+	return e.RunEnv(ctx, path, args, maxOutput, nil)
+}
+
+// RunEnv runs with an explicit additional environment.
+func (ExecRunner) RunEnv(ctx context.Context, path string, args []string, maxOutput int, env []string) ([]byte, []byte, error) {
 	stdout := &limitedBuffer{max: maxOutput}
 	stderr := &limitedBuffer{max: 128 << 10}
 	outR, outW, err := os.Pipe()
@@ -38,6 +43,9 @@ func (ExecRunner) Run(ctx context.Context, path string, args []string, maxOutput
 		return nil, nil, fmt.Errorf("stderr pipe: %w", err)
 	}
 	cmd := exec.Command(path, args...)
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
+	}
 	cmd.Stdout = outW
 	cmd.Stderr = errW
 	configureProcessGroup(cmd)

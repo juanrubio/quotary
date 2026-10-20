@@ -549,6 +549,8 @@ func (m *model) renderEmpty(width, _ int) []string {
 			"",
 			"Set the executable in Settings, or add codexbar to PATH.",
 			"Keep its resource bundle beside the executable.",
+			"Linux credentials can require a keyring or backend cookie setup.",
+			"Demo mode never contacts CodexBar or your accounts.",
 			"",
 			", Open settings     d Explore the demo",
 		}

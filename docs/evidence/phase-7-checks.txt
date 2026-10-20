@@ -1,0 +1,51 @@
+Quotary Phase 7 verification
+date: 2026-10-20T02:01:31Z
+
+$ NO_COLOR=1 make check
+go vet ./...
+go tool github.com/golangci/golangci-lint/v2/cmd/golangci-lint run
+0 issues.
+go run ./internal/tools/docscheck .
+docs-check: ok
+go test ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+ok  	github.com/juanrubio/quotary/internal/catalog	(cached)
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+ok  	github.com/juanrubio/quotary/internal/live	(cached)
+ok  	github.com/juanrubio/quotary/internal/refresh	(cached)
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	(cached)
+
+$ make race
+go test -race ./...
+?   	github.com/juanrubio/quotary/cmd/quotary	[no test files]
+ok  	github.com/juanrubio/quotary/internal/backend	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	(cached)
+ok  	github.com/juanrubio/quotary/internal/backend/demo	(cached)
+ok  	github.com/juanrubio/quotary/internal/catalog	(cached)
+ok  	github.com/juanrubio/quotary/internal/cli	(cached)
+ok  	github.com/juanrubio/quotary/internal/config	(cached)
+ok  	github.com/juanrubio/quotary/internal/domain	(cached)
+ok  	github.com/juanrubio/quotary/internal/live	(cached)
+ok  	github.com/juanrubio/quotary/internal/refresh	(cached)
+ok  	github.com/juanrubio/quotary/internal/theme	(cached)
+ok  	github.com/juanrubio/quotary/internal/tools/docscheck	(cached)
+ok  	github.com/juanrubio/quotary/internal/tui	(cached)
+
+$ go test -count=1 ./internal/catalog ./internal/config ./internal/live ./internal/cli ./internal/backend/codexbar
+ok  	github.com/juanrubio/quotary/internal/catalog	0.006s
+ok  	github.com/juanrubio/quotary/internal/config	0.005s
+ok  	github.com/juanrubio/quotary/internal/live	1.779s
+ok  	github.com/juanrubio/quotary/internal/cli	0.044s
+ok  	github.com/juanrubio/quotary/internal/backend/codexbar	1.453s
+
+manifest entries:
+106
+review log rows:
+106
