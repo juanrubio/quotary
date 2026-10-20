@@ -134,6 +134,40 @@ func TestBackendVersionHeaderIsSanitized(t *testing.T) {
 	}
 }
 
+func TestHeaderVersionLabelNotDuplicated(t *testing.T) {
+	for _, tc := range []struct{ version, want string }{
+		{"CodexBar 0.78.2", "CodexBar 0.78.2"},
+		{"0.78.2", "CodexBar 0.78.2"},
+		{"codexbar 1.2.3 beta", "codexbar 1.2.3 beta"},
+	} {
+		m := demoModel(t, demo.ScenarioSubscription)
+		m.backendVersion = tc.version
+		view := checkFrame(t, m, 120, 40)
+		if !strings.Contains(view, tc.want) {
+			t.Fatalf("version %q: header missing %q", tc.version, tc.want)
+		}
+		if strings.Contains(view, "CodexBar CodexBar") || strings.Contains(view, "CodexBar codexbar") {
+			t.Fatalf("version %q: brand duplicated in header", tc.version)
+		}
+	}
+}
+
+func TestUnreadableDataScreenDistinguishesReachableBackend(t *testing.T) {
+	m := demoModel(t, demo.ScenarioEmpty)
+	m.backendVersion = "CodexBar 0.78.2"
+	m.setupError = "The backend returned unreadable data."
+	view := checkFrame(t, m, 100, 32)
+	if !strings.Contains(view, "CodexBar data unreadable") {
+		t.Fatalf("expected reachable-backend empty state:\n%s", view)
+	}
+	if !strings.Contains(view, "r Refresh") {
+		t.Fatal("unreadable-data state should offer a refresh")
+	}
+	if strings.Contains(view, "Set the executable in Settings") {
+		t.Fatal("unreadable-data state gave the not-found setup advice")
+	}
+}
+
 type ageBackend struct {
 	*stressBackend
 	mu    sync.Mutex

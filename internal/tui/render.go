@@ -87,6 +87,16 @@ func (m *model) paintLine(line string, width int) string {
 	return sequence + strings.ReplaceAll(line, "\x1b[m", "\x1b[m"+sequence)
 }
 
+// backendLabel returns the version to show in the header. Some backends
+// report a version line that already carries the program name ("CodexBar
+// 0.78.2"), so prepending "CodexBar " again would duplicate the brand.
+func (m *model) backendLabel(version string) string {
+	if strings.Contains(strings.ToLower(version), "codexbar") {
+		return version
+	}
+	return "CodexBar " + version
+}
+
 func (m *model) shellHeader(width int) []string {
 	brand := "  " + m.theme.Accent.Bold(true).Render("QUOTARY")
 	tagline := ""
@@ -106,7 +116,7 @@ func (m *model) shellHeader(width int) []string {
 		second += "    " + m.theme.Muted.Render(fmt.Sprintf("Scenario: %s · %s", m.scenarioName(), m.clock()))
 		if m.backendVersion != "" {
 			version := truncateWidth(cleanText(m.backendVersion), max(8, width/3))
-			second += "    " + m.theme.Muted.Render("CodexBar "+version)
+			second += "    " + m.theme.Muted.Render(m.backendLabel(version))
 		}
 	}
 	if m.session == nil || m.screen == screenHelp {
@@ -565,17 +575,35 @@ func (m *model) renderEmpty(width, _ int) []string {
 		backendError = m.session.BackendError()
 	}
 	if backendError != "" {
-		title = "Connect CodexBar"
-		body = []string{
-			"Setup · no backend connection",
-			cleanText(backendError),
-			"",
-			"Set the executable in Settings, or add codexbar to PATH.",
-			"Keep its resource bundle beside the executable.",
-			"Linux credentials can require a keyring or backend cookie setup.",
-			"Demo mode never contacts CodexBar or your accounts.",
-			"",
-			", Open settings     d Explore the demo",
+		if m.backendVersion != "" && m.session != nil {
+			// The backend binary was found and reported a version, but its
+			// data could not be read: the guidance is about the data, not
+			// about locating the executable.
+			title = "CodexBar data unreadable"
+			body = []string{
+				"The backend runs, but its data could not be read.",
+				cleanText(backendError),
+				"",
+				"The CodexBar build may be newer or older than this app expects.",
+				"Keep its resource bundle beside the executable.",
+				"Linux credentials can require a keyring or backend cookie setup.",
+				"Demo mode never contacts CodexBar or your accounts.",
+				"",
+				"r Refresh     , Open settings     d Explore the demo",
+			}
+		} else {
+			title = "Connect CodexBar"
+			body = []string{
+				"Setup · no backend connection",
+				cleanText(backendError),
+				"",
+				"Set the executable in Settings, or add codexbar to PATH.",
+				"Keep its resource bundle beside the executable.",
+				"Linux credentials can require a keyring or backend cookie setup.",
+				"Demo mode never contacts CodexBar or your accounts.",
+				"",
+				", Open settings     d Explore the demo",
+			}
 		}
 	} else if m.query != "" {
 		title = "No results"
