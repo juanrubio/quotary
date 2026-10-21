@@ -733,6 +733,48 @@ func TestLiveFirstRunSeedsOnlyCompatibleEnabledSources(t *testing.T) {
 	}
 }
 
+type geminiVariantBackend struct{ *fakeBackend }
+
+func (b *geminiVariantBackend) Catalog(context.Context) (backend.CatalogSnapshot, error) {
+	return backend.CatalogSnapshot{Providers: []domain.SourceDescriptor{
+		{Key: domain.SourceKey{Provider: "gemini", Variant: domain.VariantConfigured}, ProviderID: "gemini", DisplayName: "Google · Gemini (configured)", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "gemini", Variant: domain.VariantWeb}, ProviderID: "gemini", DisplayName: "Google · Gemini app", Available: true, Enabled: true},
+		{Key: domain.SourceKey{Provider: "gemini", Variant: domain.VariantAPI}, ProviderID: "gemini", DisplayName: "Google · Gemini CLI", Available: true, Enabled: true},
+	}}, nil
+}
+
+func TestLiveGeminiVariantsGetDistinctCatalogNames(t *testing.T) {
+	// The backend reports every Gemini variant under the bare provider ID;
+	// the session must surface the catalog's per-variant names so the three
+	// tracked sources are distinguishable.
+	prefs := config.Defaults()
+	prefs.Tracked = []string{"gemini:configured", "gemini:web", "gemini:api"}
+	s := newLive(t, &geminiVariantBackend{fakeBackend: &fakeBackend{}}, prefs)
+	defer func() { _ = s.Close() }()
+	want := map[string]string{
+		"gemini:configured": "Google · Gemini (configured)",
+		"gemini:web":        "Google · Gemini app",
+		"gemini:api":        "Google · Gemini CLI",
+	}
+	waitFor(t, func() bool {
+		snapshots := s.Snapshots(context.Background())
+		if len(snapshots) != 3 {
+			return false
+		}
+		for _, snapshot := range snapshots {
+			if want[snapshot.Key.String()] != snapshot.DisplayName {
+				return false
+			}
+		}
+		return true
+	})
+	for _, snapshot := range s.Snapshots(context.Background()) {
+		if want[snapshot.Key.String()] != snapshot.DisplayName {
+			t.Fatalf("key=%s display=%q want %q", snapshot.Key, snapshot.DisplayName, want[snapshot.Key.String()])
+		}
+	}
+}
+
 type gatingBackend struct {
 	*fakeBackend
 	mu         sync.Mutex

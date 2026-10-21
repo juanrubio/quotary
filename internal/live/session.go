@@ -284,7 +284,7 @@ func (s *Session) apply(result refresh.Result) {
 		snapshot, ok := s.snapshots[targetKey]
 		if !ok {
 			targetKey = key
-			snapshot = domain.UsageSnapshot{Key: result.Key, ProviderID: result.Key.Provider, DisplayName: result.Key.Provider}
+			snapshot = domain.UsageSnapshot{Key: result.Key, ProviderID: result.Key.Provider, DisplayName: s.displayNameLocked(result.Key)}
 		}
 		snapshot.Error = asScoped(result.Err)
 		if snapshot.Error != nil {
@@ -581,10 +581,8 @@ func (s *Session) ensureSkeleton(key domain.SourceKey) {
 }
 
 func (s *Session) displayNameLocked(key domain.SourceKey) string {
-	for _, descriptor := range s.catalog.Providers {
-		if descriptor.ProviderID == key.Provider {
-			return descriptor.DisplayName
-		}
+	if descriptor, ok := s.descriptorFor(key); ok && descriptor.DisplayName != "" {
+		return descriptor.DisplayName
 	}
 	return key.Provider
 }
@@ -735,6 +733,14 @@ func (s *Session) Snapshots(context.Context) []domain.UsageSnapshot {
 	defer s.mu.RUnlock()
 	result := make([]domain.UsageSnapshot, 0, len(s.snapshots))
 	for _, snapshot := range s.snapshots {
+		// The backend and session placeholders name snapshots with the bare
+		// provider ID, which is the same for every variant of a provider and
+		// depends on whether the snapshot was created before the catalog
+		// loaded. The catalog carries the distinct reviewed names, so it
+		// wins at the presentation seam for every snapshot.
+		if descriptor, ok := s.descriptorFor(snapshot.Key); ok && descriptor.DisplayName != "" {
+			snapshot.DisplayName = descriptor.DisplayName
+		}
 		result = append(result, snapshot)
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].Key.String() < result[j].Key.String() })
