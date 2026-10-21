@@ -23,7 +23,7 @@ func TestQuitKeys(t *testing.T) {
 	// q asks for confirmation; Ctrl+C still quits immediately.
 	m := &model{}
 	_, cmd := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
-	if cmd != nil || !m.quitPrompt || m.quitSelected {
+	if cmd != nil || m.confirmation != confirmationQuit || m.confirmationSelected {
 		t.Fatal("q should open the quit prompt with Cancel selected")
 	}
 	m = &model{}
@@ -927,6 +927,7 @@ func TestSettingsDraftSuspendsThroughHelpAndCancels(t *testing.T) {
 		t.Fatalf("settings draft lost after help round trip: screen=%v theme=%s", m.screen, m.settingsDraft.Theme)
 	}
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if m.screen != screenSettings || m.settingsDraft.Theme != m.prefs.Theme || m.settingsDirty {
 		t.Fatalf("cancelled nested settings retained draft: screen=%v theme=%s dirty=%v", m.screen, m.settingsDraft.Theme, m.settingsDirty)
@@ -941,6 +942,7 @@ func TestCancelledSettingsDraftNotSavedAfterPickerOrigin(t *testing.T) {
 	m.Update(tea.KeyPressMsg{Code: ',', Text: ","})
 	m.Update(tea.KeyPressMsg{Code: 'j', Text: "j"})
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	m.Update(tea.KeyPressMsg{Code: ',', Text: ","})
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
 	if m.prefs.Theme != config.ThemeGreen {
@@ -1669,6 +1671,7 @@ func TestCancellingSettingsClearsValidationError(t *testing.T) {
 		t.Fatal("relative path did not surface an error")
 	}
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	if m.errorText != "" {
 		t.Fatalf("cancelled settings retained error %q", m.errorText)
 	}

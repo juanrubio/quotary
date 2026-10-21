@@ -116,28 +116,28 @@ type model struct {
 	all     []domain.UsageSnapshot
 	visible []domain.UsageSnapshot
 
-	selected        int
-	selectedKey     string
-	screen          screen
-	detailTab       int
-	historyDays     int
-	pickerIndex     int
-	pickerQuery     string
-	query           string
-	searching       bool
-	filter          string
-	sortMode        int
-	settingsIdx     int
-	settingsDraft   config.Preferences
-	settingsEditing bool
-	settingsInput   string
-	settingsDirty   bool
-	returnStack     []screen
-	quitPrompt      bool
-	quitSelected    bool
-	helpScroll      int
-	detailScroll    int
-	historyScroll   int
+	selected             int
+	selectedKey          string
+	screen               screen
+	detailTab            int
+	historyDays          int
+	pickerIndex          int
+	pickerQuery          string
+	query                string
+	searching            bool
+	filter               string
+	sortMode             int
+	settingsIdx          int
+	settingsDraft        config.Preferences
+	settingsEditing      bool
+	settingsInput        string
+	settingsDirty        bool
+	returnStack          []screen
+	confirmation         confirmationKind
+	confirmationSelected bool
+	helpScroll           int
+	detailScroll         int
+	historyScroll        int
 
 	prefs          config.Preferences
 	theme          theme.Styles
@@ -501,8 +501,8 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if key == "ctrl+c" {
 		return m, tea.Quit
 	}
-	if m.quitPrompt {
-		return m.onQuitKey(key)
+	if m.confirmation != confirmationNone {
+		return m.onConfirmationKey(key)
 	}
 	if m.settingsEditing {
 		return m.onSettingsEdit(msg)
@@ -600,6 +600,10 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "enter":
 		return m.onEnter()
 	case "esc":
+		if m.screen == screenSettings && m.settingsDirty {
+			m.requestDiscardSettings()
+			return m, nil
+		}
 		if m.screen == screenSettings {
 			m.settingsDraft = m.prefs
 			m.settingsDirty = false
@@ -1468,6 +1472,15 @@ func (m *model) recomputePresentationStates() {
 		m.all[index].State = m.effectiveState(m.all[index])
 	}
 	m.filterVisible()
+}
+
+func (m *model) discardSettings() {
+	m.settingsDraft = m.prefs
+	m.settingsDirty = false
+	m.errorText = ""
+	m.applyTheme()
+	m.closeSheet()
+	m.status = ""
 }
 
 func (m *model) saveSettings() {

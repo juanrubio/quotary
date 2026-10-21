@@ -15,7 +15,9 @@ import (
 func (m *model) render(width, height int) string {
 	if width < 20 || height < 8 {
 		lines := []string{"", "  Resize to continue · q quit"}
-		if m.quitPrompt {
+		if m.confirmation == confirmationDiscardSettings {
+			lines = []string{"", "  Discard settings changes?", "  y Discard · n/Esc Keep editing"}
+		} else if m.confirmation != confirmationNone {
 			lines = []string{"", "  Quit Quotary?", "  y Quit · n/Esc Stay"}
 		}
 		for len(lines) < height {
@@ -64,8 +66,8 @@ func (m *model) render(width, height int) string {
 	for index := range lines {
 		lines[index] = m.paintLine(lines[index], width)
 	}
-	if m.quitPrompt {
-		lines = m.overlayQuitPrompt(lines, width, height)
+	if m.confirmation != confirmationNone {
+		lines = m.overlayConfirmationPrompt(lines, width, height)
 	}
 	return strings.Join(lines, "\n")
 }

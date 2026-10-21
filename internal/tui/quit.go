@@ -8,35 +8,83 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// Quit confirmation, following the sibling apps (gh-boardwalk, trailmark):
-// q asks first instead of quitting, Cancel is the default choice, arrows or
-// Tab choose, Enter confirms the choice, y quits outright, Esc or n stays,
-// and Ctrl+C still quits immediately (handled before this in onKey).
+// Confirmation modals, following the sibling apps (gh-boardwalk,
+// trailmark): a destructive or discarding action asks first, the safe
+// choice is selected by default, arrows or Tab choose, Enter confirms the
+// choice, y takes the destructive action outright, Esc or n cancels, and
+// Ctrl+C still quits immediately (handled before this in onKey).
 
-func (m *model) requestQuit() {
-	m.quitPrompt = true
-	m.quitSelected = false
+type confirmationKind int
+
+const (
+	confirmationNone confirmationKind = iota
+	confirmationQuit
+	confirmationDiscardSettings
+)
+
+type confirmationSpec struct {
+	title       string
+	body        string
+	safe        string
+	destructive string
 }
 
-func (m *model) onQuitKey(key string) (tea.Model, tea.Cmd) {
+func (m *model) confirmationSpec() confirmationSpec {
+	if m.confirmation == confirmationDiscardSettings {
+		return confirmationSpec{
+			title:       "Discard settings changes?",
+			body:        "Unsaved settings will be lost.",
+			safe:        "Keep editing",
+			destructive: "Discard",
+		}
+	}
+	return confirmationSpec{
+		title:       "Quit Quotary?",
+		safe:        "Cancel",
+		destructive: "Quit",
+	}
+}
+
+func (m *model) requestQuit() {
+	m.confirmation = confirmationQuit
+	m.confirmationSelected = false
+}
+
+func (m *model) requestDiscardSettings() {
+	m.confirmation = confirmationDiscardSettings
+	m.confirmationSelected = false
+}
+
+func (m *model) onConfirmationKey(key string) (tea.Model, tea.Cmd) {
 	switch key {
 	case "esc", "n":
-		m.quitPrompt = false
+		m.confirmation = confirmationNone
 	case "left", "right", "up", "down", "tab", "shift+tab", "h", "l":
-		m.quitSelected = !m.quitSelected
+		m.confirmationSelected = !m.confirmationSelected
 	case "y":
-		m.quitPrompt = false
-		return m, tea.Quit
+		return m.confirmConfirmation()
 	case "enter":
-		m.quitPrompt = false
-		if m.quitSelected {
-			return m, tea.Quit
+		if m.confirmationSelected {
+			return m.confirmConfirmation()
 		}
+		m.confirmation = confirmationNone
 	}
 	return m, nil
 }
 
-func (m *model) quitButton(label string, selected bool, destructive bool) string {
+func (m *model) confirmConfirmation() (tea.Model, tea.Cmd) {
+	kind := m.confirmation
+	m.confirmation = confirmationNone
+	switch kind {
+	case confirmationQuit:
+		return m, tea.Quit
+	case confirmationDiscardSettings:
+		m.discardSettings()
+	}
+	return m, nil
+}
+
+func (m *model) confirmationButton(label string, selected bool, destructive bool) string {
 	marker := "  "
 	if selected {
 		marker = "> "
@@ -60,24 +108,29 @@ func (m *model) quitButton(label string, selected bool, destructive bool) string
 	return style.Render("[" + marker + label + "]")
 }
 
-func (m *model) quitButtons() string {
-	return m.quitButton("Cancel", !m.quitSelected, false) + "   " +
-		m.quitButton("Quit", m.quitSelected, true)
+func (m *model) confirmationButtons() string {
+	spec := m.confirmationSpec()
+	return m.confirmationButton(spec.safe, !m.confirmationSelected, false) + "   " +
+		m.confirmationButton(spec.destructive, m.confirmationSelected, true)
 }
 
-// renderQuitModal builds the centred confirmation box. Each content line is
-// surface-treated so the raised Surface background survives the style resets
-// inside it, the same trick card() uses for panels.
-func (m *model) renderQuitModal(width int) []string {
+// renderConfirmationModal builds the centred confirmation box. Each content
+// line is surface-treated so the raised Surface background survives the
+// style resets inside it, the same trick card() uses for panels.
+func (m *model) renderConfirmationModal(width int) []string {
+	spec := m.confirmationSpec()
 	boxWidth := min(46, max(20, width-4))
-	content := []string{
-		m.theme.Accent.Bold(true).Render("Quit Quotary?"),
+	content := []string{m.theme.Accent.Bold(true).Render(spec.title)}
+	if spec.body != "" {
+		content = append(content, m.theme.Text.Render(spec.body))
+	}
+	content = append(content,
 		"",
-		m.quitButtons(),
+		m.confirmationButtons(),
 		"",
 		m.theme.Muted.Render("←→/Tab Choose"),
 		m.theme.Muted.Render("Enter Confirm · Esc Cancel"),
-	}
+	)
 	for index := range content {
 		content[index] = m.surface(content[index])
 	}
@@ -92,11 +145,11 @@ func (m *model) renderQuitModal(width int) []string {
 	return strings.Split(style.Render(strings.Join(content, "\n")), "\n")
 }
 
-// overlayQuitPrompt splices the modal into the centre of the painted frame.
-// The underlying lines keep their canvas painting; only the cells the box
-// covers are replaced.
-func (m *model) overlayQuitPrompt(lines []string, width, height int) []string {
-	modal := m.renderQuitModal(width)
+// overlayConfirmationPrompt splices the modal into the centre of the
+// painted frame. The underlying lines keep their canvas painting; only the
+// cells the box covers are replaced.
+func (m *model) overlayConfirmationPrompt(lines []string, width, height int) []string {
+	modal := m.renderConfirmationModal(width)
 	boxWidth := 0
 	for _, line := range modal {
 		boxWidth = max(boxWidth, ansi.StringWidth(line))

@@ -301,6 +301,7 @@ func TestSettingsCancelAndMonochromeSetting(t *testing.T) {
 	m.Update(tea.KeyPressMsg{Code: ',', Text: ","})
 	m.changeSetting(1)
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	if m.prefs.Theme != original {
 		t.Fatalf("cancel kept draft theme %s", m.prefs.Theme)
 	}
@@ -1560,6 +1561,7 @@ func TestLeavingSettingsThroughHelpRestoresCommittedTheme(t *testing.T) {
 		t.Fatalf("Help did not return to Settings: %v", m.screen)
 	}
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	if m.prefs.Theme != config.ThemeGreen {
 		t.Fatalf("persisted theme changed to %s", m.prefs.Theme)
 	}
@@ -1584,6 +1586,7 @@ func TestLeavingSettingsThroughPickerRestoresCommittedTheme(t *testing.T) {
 		t.Fatalf("picker did not return to Settings: %v", m.screen)
 	}
 	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	if m.prefs.Theme != config.ThemeGreen {
 		t.Fatalf("persisted theme changed to %s", m.prefs.Theme)
 	}
