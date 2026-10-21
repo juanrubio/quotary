@@ -133,6 +133,8 @@ type model struct {
 	settingsInput   string
 	settingsDirty   bool
 	returnStack     []screen
+	quitPrompt      bool
+	quitSelected    bool
 	helpScroll      int
 	detailScroll    int
 	historyScroll   int
@@ -499,6 +501,9 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if key == "ctrl+c" {
 		return m, tea.Quit
 	}
+	if m.quitPrompt {
+		return m.onQuitKey(key)
+	}
 	if m.settingsEditing {
 		return m.onSettingsEdit(msg)
 	}
@@ -506,7 +511,8 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.onSearchKey(msg)
 	}
 	if key == "q" {
-		return m, tea.Quit
+		m.requestQuit()
+		return m, nil
 	}
 	switch key {
 	case "j", "down":

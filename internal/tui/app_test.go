@@ -20,15 +20,16 @@ import (
 )
 
 func TestQuitKeys(t *testing.T) {
-	for _, key := range []tea.KeyPressMsg{
-		{Code: 'q', Text: "q"},
-		{Code: 'c', Mod: tea.ModCtrl},
-	} {
-		m := &model{}
-		_, cmd := m.Update(key)
-		if cmd == nil {
-			t.Fatalf("%q should return a quit command", key.String())
-		}
+	// q asks for confirmation; Ctrl+C still quits immediately.
+	m := &model{}
+	_, cmd := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
+	if cmd != nil || !m.quitPrompt || m.quitSelected {
+		t.Fatal("q should open the quit prompt with Cancel selected")
+	}
+	m = &model{}
+	_, cmd = m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	if cmd == nil {
+		t.Fatal("ctrl+c should return a quit command")
 	}
 }
 
@@ -55,6 +56,7 @@ func TestTeatestShellPaintsAndQuits(t *testing.T) {
 		return bytes.Contains(b, []byte("DEMO"))
 	}, teatest.WithCheckInterval(25*time.Millisecond), teatest.WithDuration(5*time.Second))
 	tm.Send(tea.KeyPressMsg{Code: 'q', Text: "q"})
+	tm.Send(tea.KeyPressMsg{Code: 'y', Text: "y"})
 	tm.WaitFinished(t, teatest.WithFinalTimeout(5*time.Second))
 	if _, err := io.ReadAll(tm.FinalOutput(t)); err != nil {
 		t.Fatal(err)
