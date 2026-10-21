@@ -179,7 +179,12 @@ func (m *model) navLine(width int) string {
 }
 
 func (m *model) renderFooter(width int) []string {
-	hints := "  ↑↓ Move  Enter Details  / Search  p Sources  ? Help  q Quit"
+	hints := "  ↑↓ Move  Enter Details  l Cards/List  r Refresh  / Search  p Sources  ? Help  q Quit"
+	if width < 120 {
+		// The full hint set no longer fits beside the position indicator;
+		// keep the layout and help hints, which are the ones users look for.
+		hints = "  ↑↓ Move  Enter Details  l Layout  ? Help  q Quit"
+	}
 	switch m.screen {
 	case screenPicker:
 		if width < 100 {
@@ -225,7 +230,7 @@ func (m *model) renderFooter(width int) []string {
 		case screenPicker:
 			hints = "  ↑↓  Space  a Track all  ? q"
 		default:
-			hints = "  ↑↓  Enter  p  ?  q"
+			hints = "  ↑↓  Enter  l  r  p  ?  q"
 		}
 	}
 	return []string{m.rule(width), padRight(hints, max(0, width-ansiWidth(position))) + m.theme.Muted.Render(position)}

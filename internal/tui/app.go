@@ -699,7 +699,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		case m.screen == screenSettings:
 			m.moveSettings(1)
 		case m.screen == screenHelp:
-			m.helpScroll = min(m.helpScroll+max(1, m.height-8), m.helpMaxScroll())
+			m.helpScroll = min(m.helpScroll+m.helpPageSize(), m.helpMaxScroll())
 		case m.historyVisible():
 			m.historyScroll += m.pageSize()
 		case m.screen == screenDetails:
@@ -715,7 +715,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		case m.screen == screenSettings:
 			m.moveSettings(-1)
 		case m.screen == screenHelp:
-			m.helpScroll = max(0, m.helpScroll-max(1, m.height-8))
+			m.helpScroll = max(0, m.helpScroll-m.helpPageSize())
 		case m.historyVisible():
 			m.historyScroll = max(0, m.historyScroll-m.pageSize())
 		case m.screen == screenDetails:
@@ -921,7 +921,10 @@ func (m *model) toggleLayout() {
 	next := m.prefs
 	effectiveCompact := next.Layout == config.LayoutCompact ||
 		(next.Layout != config.LayoutCards && (m.width < 88 || m.height < 32))
-	if effectiveCompact && m.width >= 88 {
+	// The toggle always switches away from what is on screen. Refusing the
+	// cards layout on a narrow terminal would re-select the list the user
+	// is trying to leave, with no way back.
+	if effectiveCompact {
 		next.Layout = config.LayoutCards
 	} else {
 		next.Layout = config.LayoutCompact
@@ -1030,7 +1033,7 @@ func (m *model) loadHistoryForce(force bool) {
 
 func (m *model) helpPageSize() int { return max(1, m.height-6-5) }
 
-func (m *model) helpMaxScroll() int { return max(0, len(helpRows)-m.helpPageSize()) }
+func (m *model) helpMaxScroll() int { return max(0, len(m.helpEntries())-m.helpPageSize()) }
 
 func (m *model) overviewStep() int {
 	if m.prefs.Layout == config.LayoutCards || (m.prefs.Layout != config.LayoutCompact && m.width >= 88 && m.height >= 32) {

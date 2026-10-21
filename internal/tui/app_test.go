@@ -579,7 +579,14 @@ func TestSettingsHintsAndHelpExplainNavigation(t *testing.T) {
 		}
 	}
 	m.screen = screenHelp
-	help := checkFrame(t, m, 80, 24)
+	help := ""
+	for page := 0; page < 10; page++ {
+		help += checkFrame(t, m, 80, 24)
+		if m.helpScroll >= m.helpMaxScroll() {
+			break
+		}
+		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
+	}
 	for _, text := range []string{"Choose a theme", "Edit a backend path"} {
 		if !strings.Contains(help, text) {
 			t.Fatalf("help missing %q", text)
@@ -1051,6 +1058,27 @@ func TestLayoutToggleUsesEffectiveAutoLayout(t *testing.T) {
 	}
 }
 
+func TestLayoutToggleForcesCardsOnNarrowTerminal(t *testing.T) {
+	// Below the auto-layout width the overview falls back to the list, but
+	// pressing l must still bring the cards back; it used to just re-select
+	// the compact layout the user was trying to leave.
+	m := demoModel(t, demo.ScenarioSubscription)
+	m.prefs.Layout = config.LayoutAuto
+	m.width, m.height = 60, 20
+	m.toggleLayout()
+	if m.prefs.Layout != config.LayoutCards {
+		t.Fatalf("toggle on a narrow terminal chose %s", m.prefs.Layout)
+	}
+	view := checkFrame(t, m, 60, 20)
+	if !strings.Contains(view, "╭─") {
+		t.Fatalf("toggle did not render cards on a narrow terminal:\\n%s", view)
+	}
+	m.toggleLayout()
+	if m.prefs.Layout != config.LayoutCompact {
+		t.Fatalf("second toggle chose %s", m.prefs.Layout)
+	}
+}
+
 func TestUnwindingSettingsViaPickerCancelsDraft(t *testing.T) {
 	m := demoModel(t, demo.ScenarioSubscription)
 	m.prefs.Theme = config.ThemeGreen
@@ -1364,8 +1392,16 @@ func TestExplicitAuthFailureRetainedDuringRefreshIsLabelled(t *testing.T) {
 func TestBulkTrackingDiscoverableInHelpAndPicker(t *testing.T) {
 	m := demoModel(t, demo.ScenarioSubscription)
 	m.screen = screenHelp
-	if view := checkFrame(t, m, 60, 20); !strings.Contains(view, "Track all subscriptions") {
-		t.Fatalf("Help omits bulk tracking shortcut:\n%s", view)
+	help := ""
+	for page := 0; page < 10; page++ {
+		help += checkFrame(t, m, 60, 20)
+		if m.helpScroll >= m.helpMaxScroll() {
+			break
+		}
+		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
+	}
+	if !strings.Contains(help, "Track all subscriptions") {
+		t.Fatalf("Help omits bulk tracking shortcut:\n%s", help)
 	}
 	m.screen = screenPicker
 	if view := checkFrame(t, m, 60, 20); !strings.Contains(view, "a Track all") {
@@ -1476,7 +1512,7 @@ func TestHelpScrollClampsToViewport(t *testing.T) {
 	m := demoModel(t, demo.ScenarioSubscription)
 	m.screen = screenHelp
 	m.width, m.height = 60, 20
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 10 && m.helpScroll < m.helpMaxScroll(); i++ {
 		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
 	}
 	if m.helpScroll != m.helpMaxScroll() {
@@ -1536,7 +1572,7 @@ func TestHelpPagesCoverEveryRenderedShortcut(t *testing.T) {
 		}
 		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
 	}
-	for _, text := range []string{"Cycle filter / sort", "Pin source / track in library", "Source library / layout"} {
+	for _, text := range []string{"Overview", "Switch between cards and list", "Open the source library", "Source library", "Track or stop tracking a source", "Settings"} {
 		if !strings.Contains(seen, text) {
 			t.Fatalf("help paging skipped %q", text)
 		}

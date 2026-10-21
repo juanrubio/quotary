@@ -1142,8 +1142,15 @@ func TestNarrowHistoryRangeHintAndHelp(t *testing.T) {
 		t.Fatalf("narrow range hint clipped:\n%s", view)
 	}
 	m.screen = screenHelp
-	help := checkFrame(t, m, 60, 20)
-	if !strings.Contains(help, "Change history range") {
+	help := ""
+	for page := 0; page < 10; page++ {
+		help += checkFrame(t, m, 60, 20)
+		if m.helpScroll >= m.helpMaxScroll() {
+			break
+		}
+		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
+	}
+	if !strings.Contains(help, "7-day / 30-day history") {
 		t.Fatalf("help does not document range shortcuts:\n%s", help)
 	}
 }

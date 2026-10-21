@@ -573,24 +573,79 @@ func (m *model) choiceRow(values []string, current string) string {
 	return strings.Join(parts, "  ")
 }
 
-var helpRows = [][2]string{
-	{"↑↓←→ / j k", "Move between sources"},
-	{"Enter / Esc", "Open details / return"},
-	{"Tab / Shift+Tab", "Move fields or switch details tabs"},
-	{"↑↓ / j k", "Choose a theme or move between fields"},
-	{"← / →", "Adjust the focused setting"},
-	{"e", "Edit a backend path field"},
-	{"a", "Track all subscriptions in the picker"},
-	{"[ / ]", "Change history range"},
-	{"/", "Search the current collection"},
-	{"f / s", "Cycle filter / sort"},
-	{"Space", "Pin source / track in library"},
-	{"p / l", "Source library / layout"},
-	{"r / R", "Refresh selected / all"},
-	{"PgUp / PgDn", "Page through the collection"},
-	{",", "Open settings"},
-	{"1–6", "Switch demo scenario"},
-	{"? / q / Ctrl+C", "Help / quit"},
+// helpEntry is one line of the keyboard guide. An entry with an empty key
+// is a blank separator; an entry with an empty description is a section
+// header. Descriptions say what the key does and where, in plain words.
+type helpEntry struct {
+	key  string
+	desc string
+}
+
+type helpSection struct {
+	title string
+	rows  []helpEntry
+}
+
+var helpSections = []helpSection{
+	{"Overview", []helpEntry{
+		{"↑↓←→ / j k", "Move between sources"},
+		{"Enter", "Open the selected source"},
+		{"l", "Switch between cards and list"},
+		{"/", "Search sources by name"},
+		{"f", "Filter: all / attention / pinned"},
+		{"s", "Change the sort order"},
+		{"Space", "Pin or unpin the selected source"},
+		{"r / R", "Refresh selected / all sources"},
+		{"p", "Open the source library"},
+		{",", "Open settings"},
+	}},
+	{"Source details (after Enter)", []helpEntry{
+		{"Tab", "Switch between Allowances and History"},
+		{"[ / ]", "Show 7-day / 30-day history"},
+		{"r", "Refresh this source"},
+		{"Esc", "Back to the overview"},
+	}},
+	{"Source library (after p)", []helpEntry{
+		{"↑↓", "Move through the library"},
+		{"Space", "Track or stop tracking a source"},
+		{"a", "Track all subscriptions at once"},
+		{"/", "Search the library"},
+		{"Esc", "Close the library"},
+	}},
+	{"Settings (after ,)", []helpEntry{
+		{"Tab", "Move between settings"},
+		{"↑↓ / ←→", "Choose a theme / change the focused setting"},
+		{"e", "Edit a backend path"},
+		{"Enter / Esc", "Save changes / cancel"},
+	}},
+	{"Everywhere", []helpEntry{
+		{"?", "This guide"},
+		{"PgUp / PgDn", "Move a page at a time"},
+		{"Esc", "Go back or close"},
+		{"q / Ctrl+C", "Quit"},
+	}},
+}
+
+// helpEntries flattens the guide sections for rendering and scrolling. The
+// demo-scenario keys only do something in demo mode, so live sessions do
+// not list them.
+func (m *model) helpEntries() []helpEntry {
+	var entries []helpEntry
+	for _, section := range helpSections {
+		if len(entries) > 0 {
+			entries = append(entries, helpEntry{})
+		}
+		entries = append(entries, helpEntry{key: section.title})
+		entries = append(entries, section.rows...)
+	}
+	if m.demo {
+		entries = append(entries,
+			helpEntry{},
+			helpEntry{key: "Demo"},
+			helpEntry{key: "1–6 / d", desc: "Try another demo scenario"},
+		)
+	}
+	return entries
 }
 
 func (m *model) renderHelp(width, height int) []string {
@@ -602,12 +657,20 @@ func (m *model) renderHelp(width, height int) []string {
 		"",
 	}
 	visibleRows := max(1, height-5)
-	start := min(m.helpScroll, max(0, len(helpRows)-visibleRows))
-	for _, row := range helpRows[start:] {
+	entries := m.helpEntries()
+	start := min(m.helpScroll, max(0, len(entries)-visibleRows))
+	for _, entry := range entries[start:] {
 		if len(lines) >= height {
 			break
 		}
-		lines = append(lines, fmt.Sprintf("  %-20s %s", row[0], m.theme.Muted.Render(row[1])))
+		switch {
+		case entry.key == "":
+			lines = append(lines, "")
+		case entry.desc == "":
+			lines = append(lines, "  "+m.theme.Accent.Bold(true).Render(entry.key))
+		default:
+			lines = append(lines, fmt.Sprintf("  %-20s %s", entry.key, m.theme.Muted.Render(entry.desc)))
+		}
 	}
 	return lines
 }
