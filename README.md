@@ -4,21 +4,28 @@
 
 Quotary shows the capacity, time left, reset times, and plans of the AI services you use, in one keyboard-driven terminal dashboard. It reads provider data through the [CodexBar](https://github.com/steipete/CodexBar) CLI installed on your machine, so your credentials stay with CodexBar — Quotary never copies them.
 
-![Quotary's fictional subscription desk, showing twelve sources at once](docs/mockups/screens/01-subscription-desk.png)
+![Quotary running its built-in offline demo: the subscription desk, a source's details, and its history](docs/media/showcase.gif)
 
-*Fictional design reference. No real account or provider reading is shown here; terminal captures of the running app live in [docs/evidence/captures](docs/evidence/captures).*
+*The app running its built-in demo. Everything on screen is fictional; the recording script is [tapes/showcase.tape](tapes/showcase.tape). Still captures live in [docs/evidence/captures](docs/evidence/captures), and the original design reference is under [Preview the design](#preview-the-design).*
 
 **Status:** usable prototype. The offline demo, live CodexBar mode, scheduler, provider catalog, versioned preferences, and responsive TUI are implemented. Linux first.
 
 ## Install
 
-There are no release binaries yet; build from source with Go 1.27.2 or newer:
+Download the binary for your platform from the [releases page](https://github.com/juanrubio/quotary/releases) — `quotary_0.5.0_linux_amd64`, `quotary_0.5.0_linux_arm64`, `quotary_0.5.0_darwin_amd64`, or `quotary_0.5.0_darwin_arm64` — then make it executable and put it on your `PATH`:
+
+```sh
+chmod +x quotary_0.5.0_linux_amd64
+mv quotary_0.5.0_linux_amd64 ~/.local/bin/quotary
+```
+
+Or build from source with Go 1.27.2 or newer:
 
 ```sh
 make build
 ```
 
-That produces `./quotary`. Move it somewhere on your `PATH` if you like.
+That produces `./quotary`.
 
 For live mode you also need CodexBar: download it from its [releases page](https://github.com/steipete/CodexBar/releases), keep the `codexbar` executable beside its resource bundle, and set up your providers through CodexBar itself. Quotary finds the executable in this order: `QUOTARY_CODEXBAR_PATH`, the backend path configured in settings, then `codexbar` on `PATH`.
 
