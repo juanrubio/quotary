@@ -2,123 +2,73 @@
 
 **Your AI subscriptions, at a glance.**
 
-Quotary is a planned Go terminal dashboard for seeing the capacity, reset times,
-plans, and usage history of the AI services you use. Its first prototype is
-designed around CodexBar CLI: CodexBar reads provider data, and Quotary turns it
-into a polished, keyboard driven interface.
+Quotary shows the capacity, time left, reset times, and plans of the AI services you use, in one keyboard-driven terminal dashboard. It reads provider data through the [CodexBar](https://github.com/steipete/CodexBar) CLI installed on your machine, so your credentials stay with CodexBar — Quotary never copies them.
 
 ![Quotary's fictional subscription desk, showing twelve sources at once](docs/mockups/screens/01-subscription-desk.png)
 
-*Fictional design reference. No application or provider reading is shown here.*
+*Fictional design reference. No real account or provider reading is shown here; terminal captures of the running app live in [docs/evidence/captures](docs/evidence/captures).*
 
-**Project status:** usable prototype. The offline demo, live CodexBar adapter,
-scheduler, catalog manifest, versioned preferences, and responsive TUI are
-implemented. Live provider validation remains open until a pinned CodexBar
-executable and real credentials are available.
+**Status:** usable prototype. The offline demo, live CodexBar mode, scheduler, provider catalog, versioned preferences, and responsive TUI are implemented. Linux first.
 
-## Preview the design
+## Install
 
-Open [`docs/mockups/index.html`](docs/mockups/index.html) in a browser. The
-interactive reference works locally without an account, backend, server, or
-network connection. Choose a view, terminal size, or theme using the controls
-above the terminal, then click the terminal and try its keyboard controls.
-
-See the [mockup implementer guide](docs/mockups/README.md) for the screen index,
-cell measurements, interactions, fictional fixtures, and instructions to export
-the reference screenshots again.
-
-## Product goals
-
-- Make the large collection the normal case. Discover the complete provider
-  catalog exposed by the backend rather than capping the view at four services.
-- Give Claude Code, Codex, Muse Code, Gemini, and Antigravity explicit
-  validation coverage, while keeping other compatible subscriptions discoverable.
-- Show each source's reported allowance, units, and reset. Keep stale, missing,
-  and genuinely exhausted readings distinct; do not combine unrelated quotas
-  into a fictitious overall percentage.
-- Include an attractive offline demonstration using clearly fictional data.
-- Start with Linux and keep provider reading behind a Go adapter that can be
-  checked independently from the terminal presentation.
-
-Google's Gemini app, Gemini CLI, and Antigravity are separate sources. API usage,
-credits, token history, and subscription allowances also remain distinct. The
-backend catalog snapshot contains 106 provider IDs; it is a catalog reference,
-not proof of 106 active subscriptions or working integrations.
-
-## Project documents
-
-- [Product and technical specification](docs/specs/product.md): scope, coverage, backend
-  contract, data meaning, implementation stages, and acceptance criteria.
-- [Visual and interaction specification](docs/specs/tui.md): layouts, keyboard behavior,
-  states, themes, and small terminal requirements.
-- [Interactive mockups](docs/mockups/index.html) and [implementer guide](docs/mockups/README.md):
-  15 reference screens, browser preview, fixtures, and reproducible captures.
-- [CodexBar 0.77.0 provider catalog](docs/reference/codexbar-0.77.0-providers.json):
-  public default catalog metadata captured from an empty temporary configuration.
-
-## Backend reference
-
-The prototype references [CodexBar CLI v0.77.0](https://github.com/steipete/CodexBar/releases/tag/v0.77.0).
-Its executable is named `codexbar`. The mockups do not invoke it or read local
-provider credentials. The disposable copy previously used to inspect its public
-catalog lived at `/tmp/codexbar-cli/`; temporary development files may be removed
-and are not a runtime dependency.
-
-The Go application is intended to accept a configured executable path, then
-discover `codexbar` on `PATH`. Keep CodexBar's executable and resource bundle
-together when installing it. Refer to the
-[upstream CLI documentation](https://github.com/steipete/CodexBar/blob/v0.77.0/docs/cli.md)
-for its setup and provider behavior.
-
-## Repository contents
-
-```text
-README.md                         Project overview and preview instructions
-AGENTS.md                         Contributor front door
-Makefile                          Build, test, lint, docs-check, and race targets
-cmd/quotary/                      Thin executable entrypoint
-internal/                         CLI, domain, backends, config, refresh, TUI
-testdata/codexbar/                Synthetic or redacted adapter fixtures
-tapes/                            VHS demo scripts
-docs/README.md                    Documentation index
-docs/specs/product.md             Product and technical specification
-docs/specs/tui.md                 TUI and interaction specification
-docs/implementation-plan.md       Delivery sequence and exit gates
-docs/decisions/                   Architecture decision records
-docs/mockups/                     Offline browser reference and screenshots
-docs/reference/                   Pinned public provider catalog snapshot
-docs/evidence/                    Reviews, live checks, captures, measurements
-```
-
-## Build, run, and setup
+There are no release binaries yet; build from source with Go 1.27.2 or newer:
 
 ```sh
 make build
-./quotary --demo          # offline fictional demonstration
-./quotary                 # live CodexBar mode
 ```
 
-Demo mode never invokes CodexBar, reads provider credentials, or touches the
-network. Live mode resolves the executable in this order:
-`QUOTARY_CODEXBAR_PATH`, the configured backend path, then `codexbar` on `PATH`.
-Download CodexBar CLI v0.77.0 from
-<https://github.com/steipete/CodexBar/releases/tag/v0.77.0>, unpack the release
-archive, and keep the `codexbar` executable beside its resource bundle. Add the
-executable to `PATH` or set `QUOTARY_CODEXBAR_PATH` to its absolute path. Configure
-provider credentials through CodexBar itself; Quotary never copies credentials.
+That produces `./quotary`. Move it somewhere on your `PATH` if you like.
 
-Preferences live at `$XDG_CONFIG_HOME/quotary/config.json` (falling back to
-`~/.config/quotary/config.json`); `QUOTARY_CONFIG_PATH` is a diagnostic/test
-override. Preferences are versioned and written atomically. A configured backend
-config path is passed to the child only as `CODEXBAR_CONFIG`.
+For live mode you also need CodexBar: download it from its [releases page](https://github.com/steipete/CodexBar/releases), keep the `codexbar` executable beside its resource bundle, and set up your providers through CodexBar itself. Quotary finds the executable in this order: `QUOTARY_CODEXBAR_PATH`, the backend path configured in settings, then `codexbar` on `PATH`.
 
-Press `p` to track sources, `?` for the keyboard guide, `,` for settings, and
-`q` to quit. Live validation limits and unavailable-credential records are in
-`docs/evidence/live-validation.md`. Product acceptance details remain in
-`docs/specs/product.md` and `docs/specs/tui.md`.
+## Quick start
+
+```sh
+./quotary --demo   # offline fictional demonstration
+./quotary          # live mode, reading through your CodexBar install
+```
+
+Demo mode never invokes CodexBar, reads provider credentials, or touches the network. On first launch, live mode seeds the enabled sources it can track automatically; press `p` to choose which sources to track. Preferences live at `$XDG_CONFIG_HOME/quotary/config.json` (falling back to `~/.config/quotary/config.json`) and are versioned and written atomically.
+
+Inside the dashboard, everything is keyboard-driven and the footer shows the keys that matter right now. Press `?` any time for the full guide. The ones you will use most:
+
+| Key | What it does |
+|---|---|
+| `↑↓←→` or `jk` | Move between sources |
+| `Enter` | Open the selected source (Details) |
+| `Tab` | Switch between Allowances and History, inside Details |
+| `Esc` | Go back (asks before discarding unsaved settings changes) |
+| `l` | Switch between cards and list |
+| `/` | Search sources by name |
+| `f` | Filter: all, needs attention, pinned |
+| `s` | Change the sort order |
+| `Space` | Pin or unpin a source; track or untrack it in the library |
+| `r` / `R` | Refresh the selected source / every source |
+| `p` | Open the source library, to add or remove sources |
+| `,` | Open settings |
+| `q` | Ask to quit; Cancel is selected by default |
+
+## Good to know
+
+- **What you see is what the backend reported.** Stale, missing, and genuinely exhausted readings stay distinct, and unrelated quotas are never combined into a made-up overall percentage. Where CodexBar does not report a plan — it happens — the card says "Plan not reported" rather than guessing.
+- **Similar-looking sources stay separate.** Gemini app, Gemini CLI, and Antigravity are distinct sources, and API usage, credits, token history, and subscription allowances are never merged.
+- **The catalog is a discovery surface.** CodexBar exposes 106 provider IDs; that makes them discoverable in the library, not proof of 106 working integrations.
+
+## Preview the design
+
+Open [`docs/mockups/index.html`](docs/mockups/index.html) in a browser. The interactive reference works locally without an account, backend, server, or network connection, and its keyboard controls work too. The [mockup implementer guide](docs/mockups/README.md) has the screen index, cell measurements, and instructions to export the reference screenshots again.
+
+## Contributing — humans and AI tools welcome
+
+Quotary itself was built with AI assistance, and contributions made that way are welcome here. Point your coding agent — or yourself — at [AGENTS.md](AGENTS.md): it has the map of the repo, how to build and verify, and the few rules that aren't obvious from the code. Contributions are judged on the change itself: specs respected, `make check` green. For anything bigger than a small fix, an issue first saves everyone time; [CONTRIBUTING.md](CONTRIBUTING.md) walks through the loop.
+
+## Documentation and development
+
+- [Product and technical specification](docs/specs/product.md) covers scope, the backend contract, data meaning, and acceptance criteria; the [visual and interaction specification](docs/specs/tui.md) covers layouts, keyboard behaviour, states, and themes.
+- [Documentation index](docs/README.md) maps everything else: the [implementation plan](docs/implementation-plan.md), [architecture decisions](docs/decisions/), evidence and captures, and the [pinned CodexBar 0.77.0 provider catalog](docs/reference/codexbar-0.77.0-providers.json) the adapter was developed against.
+- Hacking on it: `make check` runs vet, the pinned linter, docs-check, and the full offline test suite; `make build` builds the binary; `make race` adds the race detector for scheduler or process work.
 
 ## License
 
-Quotary's repository content is provided under the [MIT License](LICENSE).
-CodexBar is a separate upstream project; its name and referenced behavior remain
-subject to its own license and terms.
+[MIT](LICENSE). CodexBar is a separate upstream project; its name and referenced behaviour remain subject to its own license and terms.
