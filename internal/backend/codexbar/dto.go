@@ -521,6 +521,9 @@ func normalizeUsageRecord(record map[string]any, base domain.SourceKey, now time
 	snapshot.Windows = normalizeWindowKeys(windowsFromRecord(record))
 	snapshot.Balances = balancesFromRecord(record)
 	snapshot.Details = detailsFromRecord(record)
+	if snapshot.Plan == "" {
+		snapshot.Plan = planFromDetails(snapshot.Details)
+	}
 	if malformedMetricCollections(record) {
 		snapshot.Details = append(snapshot.Details, domain.DetailSection{Title: "Unsupported metrics", Unsupported: true})
 	}
@@ -641,7 +644,14 @@ func windowsFromRecord(record map[string]any) []domain.AllowanceWindow {
 	for _, field := range []string{"primary", "secondary", "tertiary", "session", "weekly", "monthly"} {
 		value, present := lookup(record, field)
 		if present && value == nil {
-			windows = append(windows, domain.AllowanceWindow{Key: field, Label: labels[field], Quality: domain.QualityUnavailable})
+			// A null slot is a declared missing allowance only when the
+			// backend labels that window (or labels none at all). CodexBar
+			// 0.78.0 emits fixed slots with nulls for windows a provider
+			// does not have and lists the real ones in rateWindowLabels;
+			// an unlabeled null there is schema noise, not a window.
+			if _, labeled := reported[field]; labeled || len(reported) == 0 {
+				windows = append(windows, domain.AllowanceWindow{Key: field, Label: labels[field], Quality: domain.QualityUnavailable})
+			}
 			continue
 		}
 		for index, entry := range asList(value) {
@@ -922,6 +932,22 @@ func normalizeBalance(mapped map[string]any) domain.Balance {
 		balance.Unit = stringValue(pick(mapped, "currencyCode"))
 	}
 	return balance
+}
+
+// planFromDetails returns the value of a "Plan" row in the reported detail
+// sections, or "" when none is reported. CodexBar 0.78.0 carries some
+// providers' plan only there (Muse, for example), not in a plan field.
+func planFromDetails(sections []domain.DetailSection) string {
+	for _, section := range sections {
+		for _, row := range section.Rows {
+			if strings.EqualFold(strings.TrimSpace(row.Label), "plan") {
+				if value := strings.TrimSpace(row.Value); value != "" {
+					return value
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func detailsFromRecord(record map[string]any) []domain.DetailSection {

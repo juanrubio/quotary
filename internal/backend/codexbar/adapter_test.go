@@ -1259,6 +1259,61 @@ func TestDeclaredNullWindowPreservedAsUnavailable(t *testing.T) {
 	}
 }
 
+func TestUnlabeledNullWindowsAreSchemaNoise(t *testing.T) {
+	// CodexBar 0.78.0 emits fixed primary/secondary/tertiary slots, null for
+	// windows the provider does not have, and lists the real ones in
+	// rateWindowLabels. A null slot the backend does not label is not a
+	// missing allowance; it must not become a phantom unavailable window.
+	body := []byte(`{"provider":"codex","rateWindowLabels":{"secondary":"Weekly"},"primary":null,"secondary":{"usedPercent":3},"tertiary":null}`)
+	a, _ := adapterWith(body)
+	snapshots, err := a.Usage(context.Background(), backend.UsageRequest{ProviderID: "codex"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	windows := snapshots[0].Windows
+	if len(windows) != 1 || windows[0].Label != "Weekly" {
+		t.Fatalf("windows=%+v", windows)
+	}
+	if snapshots[0].State != domain.StatusCurrent {
+		t.Fatalf("state=%v", snapshots[0].State)
+	}
+}
+
+func TestLabeledNullWindowPreservedAsUnavailable(t *testing.T) {
+	// A null slot the backend does label is a declared missing allowance for
+	// a window that exists, so it keeps the unavailable placeholder.
+	body := []byte(`{"provider":"muse","rateWindowLabels":{"primary":"5 hours","secondary":"Weekly"},"primary":null,"secondary":{"usedPercent":44},"tertiary":null}`)
+	a, _ := adapterWith(body)
+	snapshots, err := a.Usage(context.Background(), backend.UsageRequest{ProviderID: "muse"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	windows := snapshots[0].Windows
+	if len(windows) != 2 || windows[0].Label != "5 hours" || windows[0].Quality != domain.QualityUnavailable || windows[0].UsedPercent != nil {
+		t.Fatalf("windows=%+v", windows)
+	}
+	if snapshots[0].State != domain.StatusPartial {
+		t.Fatalf("state=%v", snapshots[0].State)
+	}
+}
+
+func TestPlanPromotedFromDetailsRows(t *testing.T) {
+	// CodexBar 0.78.0 reports Muse's plan only as a details row, not as a
+	// plan field; the snapshot plan should still surface it.
+	body := []byte(`{"provider":"muse","primary":{"usedPercent":1},"details":[{"title":"Muse Code subscription","rows":[{"label":"Plan","value":"Muse Code Max Usage"}]}]}`)
+	a, _ := adapterWith(body)
+	snapshots, err := a.Usage(context.Background(), backend.UsageRequest{ProviderID: "muse"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshots[0].Plan != "Muse Code Max Usage" {
+		t.Fatalf("plan=%q", snapshots[0].Plan)
+	}
+	if len(snapshots[0].Details) != 1 {
+		t.Fatalf("details=%+v", snapshots[0].Details)
+	}
+}
+
 func TestUnsupportedDetailContainersAndMembersDisclosed(t *testing.T) {
 	body := []byte(`{"provider":"codex","details":[42,{"title":"Mixed","rows":[{"label":"A","value":"B"}],"chart":[42]}]}`)
 	a, _ := adapterWith(body)
