@@ -1058,6 +1058,118 @@ func TestLayoutToggleUsesEffectiveAutoLayout(t *testing.T) {
 	}
 }
 
+func TestEnterThenTabCyclesDetailsTabs(t *testing.T) {
+	// Enter has one job: open the selected source. Tab has a different job,
+	// and only inside Details: cycle between Allowances and History.
+	m := demoModel(t, demo.ScenarioSubscription)
+	m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
+	if m.screen != screenOverview {
+		t.Fatalf("tab on overview moved to screen %v", m.screen)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if m.screen != screenDetails || m.detailTab != 0 {
+		t.Fatalf("enter: screen=%v tab=%d", m.screen, m.detailTab)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
+	if m.screen != screenDetails || m.detailTab != 1 {
+		t.Fatalf("tab to history: screen=%v tab=%d", m.screen, m.detailTab)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
+	if m.screen != screenDetails || m.detailTab != 0 {
+		t.Fatalf("tab back to allowances: screen=%v tab=%d", m.screen, m.detailTab)
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	if m.screen != screenOverview {
+		t.Fatalf("escape from details returned to %v", m.screen)
+	}
+}
+
+func TestTopBarNavigationContext(t *testing.T) {
+	tests := []struct {
+		name    string
+		setup   func(*model)
+		width   int
+		want    []string
+		notWant []string
+	}{
+		{
+			name:    "overview shows no source tabs or key hints",
+			setup:   func(*model) {},
+			width:   120,
+			want:    []string{"[Overview]"},
+			notWant: []string{"Details", "History", "/ Search", "f Filter", "p Sources"},
+		},
+		{
+			name:    "details allowances keeps only overview in top bar",
+			setup:   func(m *model) { m.screen = screenDetails },
+			width:   120,
+			want:    []string{"[Overview]"},
+			notWant: []string{"Details", "History"},
+		},
+		{
+			name:    "details history keeps only overview in top bar",
+			setup:   func(m *model) { m.screen, m.detailTab = screenDetails, 1 },
+			width:   120,
+			want:    []string{"[Overview]"},
+			notWant: []string{"Details", "History"},
+		},
+		{
+			name:    "history screen keeps only overview in top bar",
+			setup:   func(m *model) { m.screen = screenHistory },
+			width:   120,
+			want:    []string{"[Overview]"},
+			notWant: []string{"Details", "History"},
+		},
+		{
+			name:    "picker keeps only overview in top bar",
+			setup:   func(m *model) { m.screen = screenPicker },
+			width:   120,
+			want:    []string{"[Overview]"},
+			notWant: []string{"Details", "History"},
+		},
+		{
+			name:    "narrow history keeps only overview in top bar",
+			setup:   func(m *model) { m.screen, m.detailTab = screenDetails, 1 },
+			width:   50,
+			want:    []string{"[Overview]"},
+			notWant: []string{"Details", "History"},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			m := demoModel(t, demo.ScenarioSubscription)
+			tc.setup(m)
+			got := cleanText(m.navLine(tc.width))
+			for _, want := range tc.want {
+				if !strings.Contains(got, want) {
+					t.Fatalf("top bar %q missing %q", got, want)
+				}
+			}
+			for _, notWant := range tc.notWant {
+				if strings.Contains(got, notWant) {
+					t.Fatalf("top bar %q contains %q", got, notWant)
+				}
+			}
+		})
+	}
+}
+
+func TestDetailsKeyHintsLiveOnlyInBottomBar(t *testing.T) {
+	m := demoModel(t, demo.ScenarioSubscription)
+	m.screen = screenDetails
+	details := cleanText(strings.Join(m.renderDetails(120, 40), "\n"))
+	if !strings.Contains(details, "[Allowances]") || !strings.Contains(details, "History") {
+		t.Fatalf("details area lost its Allowances/History tabs:\n%s", details)
+	}
+	if strings.Contains(details, "Esc Overview") {
+		t.Fatalf("details area repeats a key hint outside the bottom bar:\n%s", details)
+	}
+	frame := checkFrame(t, m, 120, 40)
+	if !strings.Contains(frame, "Esc Overview") {
+		t.Fatalf("details bottom bar lost its Esc hint:\n%s", frame)
+	}
+}
+
 func TestLayoutToggleForcesCardsOnNarrowTerminal(t *testing.T) {
 	// Below the auto-layout width the overview falls back to the list, but
 	// pressing l must still bring the cards back; it used to just re-select
@@ -1572,7 +1684,7 @@ func TestHelpPagesCoverEveryRenderedShortcut(t *testing.T) {
 		}
 		m.Update(tea.KeyPressMsg{Code: tea.KeyPgDown})
 	}
-	for _, text := range []string{"Overview", "Switch between cards and list", "Open the source library", "Source library", "Track or stop tracking a source", "Settings"} {
+	for _, text := range []string{"Overview", "Switch between cards and list", "Open the source library", "Source library", "Track or stop tracking a source", "Settings", "Switch between Allowances and History"} {
 		if !strings.Contains(seen, text) {
 			t.Fatalf("help paging skipped %q", text)
 		}

@@ -18,7 +18,7 @@ func (m *model) renderDetails(width, height int) []string {
 	lines := []string{
 		"  " + m.theme.Accent.Bold(true).Render(title),
 		m.rule(width),
-		"  " + m.tab("Allowances", m.detailTab == 0) + "   " + m.tab("History", m.detailTab == 1) + "   " + m.theme.Muted.Render("Esc Overview"),
+		"  " + m.tab("Allowances", m.detailTab == 0) + "   " + m.tab("History", m.detailTab == 1),
 		"",
 	}
 	if m.detailTab == 1 {

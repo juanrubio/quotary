@@ -1,7 +1,7 @@
   [1mQUOTARY[m    Your AI subscriptions, at a glance                                                  DEMO · fictional data  
   24 sources · 24 current · 2 attention    Scenario: subscription · 2026-10-16T14:00:00Z                                
   --------------------------------------------------------------------------------------------------------------------  
-  [1m[Overview][m   Details   History   [ All tracked ]   Sort: Pinned first · name         / Search   f Filter   p Sources  
+  [1m[Overview][m   [ All tracked ]   Sort: Pinned first · name                                                              
   +- > Claude Code -------------------+  +- Codex ---------------------------+  +- Muse Code -----------------------+   
   | Max · pinned              +1 more |  | Pro · pinned              +1 more |  | Power Usage · pinned              |   
   | 5h     #######---        72% left |  | 5h     ########--        84% left |  | 5h     ######----        63% left |   

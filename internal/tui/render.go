@@ -136,26 +136,14 @@ func (m *model) scenarioName() string {
 }
 
 func (m *model) navLine(width int) string {
+	// The top bar has one destination: Overview. Details and History are
+	// views of the selected source and are named by the tabs inside Details,
+	// so repeating them here only duplicates that control. Key hints live
+	// in the bottom bar, not here.
 	if width < 60 {
-		return "  " + m.theme.Accent.Render("Overview")
+		return "  " + m.theme.Accent.Render("[Overview]")
 	}
-	tabs := []string{"Overview", "Details", "History"}
-	active := 0
-	switch m.screen {
-	case screenDetails:
-		active = 1
-	case screenHistory:
-		active = 2
-	}
-	var parts []string
-	for index, tab := range tabs {
-		if index == active {
-			parts = append(parts, m.theme.Accent.Bold(true).Render("["+tab+"]"))
-		} else {
-			parts = append(parts, m.theme.Muted.Render(tab))
-		}
-	}
-	left := "  " + strings.Join(parts, "   ")
+	left := "  " + m.theme.Accent.Bold(true).Render("[Overview]")
 	filterText := filterLabel(m.filter)
 	if width < 88 {
 		filterText = map[string]string{"all": "[All]", "attention": "[Attention]", "pinned": "[Pinned]"}[m.filter]
@@ -171,11 +159,7 @@ func (m *model) navLine(width int) string {
 	if m.searching || m.query != "" {
 		left += "   " + m.theme.Accent.Render("/ "+m.query+"▌")
 	}
-	right := ""
-	if width >= 88 && !m.searching && m.query == "" && m.sortMode == 0 {
-		right = m.theme.Muted.Render(" / Search   f Filter   p Sources") + "  "
-	}
-	return padRight(left, max(0, width-ansiWidth(right))) + right
+	return padRight(left, width)
 }
 
 func (m *model) renderFooter(width int) []string {
