@@ -118,7 +118,7 @@ run_timeout_case() {
     tmux kill-session -t "$session" 2>/dev/null || true
     exit 1
   fi
-  tmux send-keys -t "$session" "q"
+  tmux send-keys -t "$session" "qy"
   sleep 2
   local after
   after="$(tmux capture-pane -p -t "$session" -S -30)"
@@ -158,7 +158,7 @@ run_signal_case() {
   echo "Quotary terminal restoration check"
   echo "date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "terminal: tmux PTY 80x24 TERM=xterm-256color for q/Ctrl+C/hanging-backend; script PTY for SIGTERM"
-  run_case "quit-q" "q"
+  run_case "quit-q" "qy"
   run_case "quit-ctrl-c" "C-c"
   run_signal_case
   run_timeout_case

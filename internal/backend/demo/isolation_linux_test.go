@@ -71,7 +71,7 @@ func TestDemoStartupMakesNoExternalAccess(t *testing.T) {
 	}
 	go func() {
 		time.Sleep(500 * time.Millisecond)
-		_, _ = io.WriteString(stdin, "q")
+		_, _ = io.WriteString(stdin, "qy")
 		_ = stdin.Close()
 	}()
 	if err := cmd.Wait(); err != nil {
